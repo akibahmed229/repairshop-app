@@ -1,0 +1,85 @@
+import 'package:flutter/material.dart';
+import 'package:repair_shop/core/theme/app_pallate.dart';
+import 'package:repair_shop/features/auth/presentation/pages/signup_page.dart';
+import 'package:repair_shop/features/auth/presentation/widgets/auth_field.dart';
+import 'package:repair_shop/features/auth/presentation/widgets/auth_gradient_button.dart';
+
+class LoginPage extends StatefulWidget {
+  // Static method to create a route for the SignupPage
+  static route() => MaterialPageRoute(builder: (context) => const LoginPage());
+
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  // Global key for the form
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  // Text Editing Controllers for the fields
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Padding(
+        padding: EdgeInsetsGeometry.all(20),
+        child: Center(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'Sign In.',
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 30),
+
+                AuthField(hintText: 'Email', controller: _emailController),
+                const SizedBox(height: 15),
+                AuthField(
+                  hintText: 'Password',
+                  controller: _passwordController,
+                  obscureText: true,
+                ),
+                const SizedBox(height: 20),
+
+                AuthGradientButton(
+                  buttonText: "Sign In",
+                  onPressed: () {
+                    // Validate the form
+                  },
+                ),
+                const SizedBox(height: 20),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(context, SignupPage.router());
+                  },
+                  child: RichText(
+                    text: TextSpan(
+                      text: 'Dont\'t have an account? ',
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      children: [
+                        TextSpan(
+                          text: ' Sign Up',
+                          style: const TextStyle(
+                            color: AppPallete.gradient2,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
