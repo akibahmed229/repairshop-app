@@ -45,7 +45,6 @@ class _RepairShopState extends State<RepairShop> {
       home: BlocSelector<AppWideUserCubit, AppWideUserState, bool>(
         selector: (state) => state is AppWideUserLoggedIn,
         builder: (context, isLoggedIn) {
-          print(isLoggedIn);
           if (isLoggedIn) {
             return Scaffold(
               body: Center(child: Text("Welcome to the HomeScreen")),
