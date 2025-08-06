@@ -29,6 +29,15 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   @override
+  void dispose() {
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
@@ -40,7 +49,14 @@ class _SignupPageState extends State<SignupPage> {
               if (state is AuthFailure) {
                 showSnackBar(context, state.message);
               } else if (state is AuthSuccess) {
-                showSnackBar(context, 'welcome ${state.user.name}');
+                showSnackBar(
+                  context,
+                  'Heloo ${state.user.name} you can now login',
+                );
+
+                _usernameController.clear();
+                _emailController.clear();
+                _passwordController.clear();
               }
             },
             builder: (context, state) {
