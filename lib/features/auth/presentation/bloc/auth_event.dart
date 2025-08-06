@@ -16,3 +16,16 @@ final class AuthSignUpEvent extends AuthEvent {
     required this.password,
   });
 }
+
+final class AuthLogInEvent extends AuthEvent {
+  final String email;
+  final String password;
+
+  const AuthLogInEvent({required this.email, required this.password});
+}
+
+// Event triggered to check if a user is already logged in
+// (e.g., when app starts or resumes)
+final class AuthIsUserLoggedInEvent extends AuthEvent {
+  const AuthIsUserLoggedInEvent();
+}

@@ -43,6 +43,7 @@ dependencies:
   internet_connection_checker_plus: ^2.7.2
   fpdart: ^1.1.1
   path_provider: ^2.0.0
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

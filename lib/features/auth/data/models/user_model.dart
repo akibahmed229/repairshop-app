@@ -5,6 +5,7 @@ class UserModel extends UserEntities {
     required super.id,
     required super.name,
     required super.email,
+    super.token,
   });
 
   factory UserModel.formJson(Map<String, dynamic> map) {
@@ -12,6 +13,15 @@ class UserModel extends UserEntities {
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       email: map['email'] ?? '',
+    );
+  }
+
+  UserModel copyWith({String? id, String? name, String? email, String? token}) {
+    return UserModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      token: token ?? this.token,
     );
   }
 }

@@ -1,13 +1,23 @@
 import 'package:get_it/get_it.dart';
+import 'package:repair_shop/core/common/cubits/app_wide_user/app_wide_user_cubit.dart';
+import 'package:repair_shop/core/utils/sp_service.dart';
 import 'package:repair_shop/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:repair_shop/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:repair_shop/features/auth/domain/repository/auth_repository.dart';
+import 'package:repair_shop/features/auth/domain/usecases/current_user.dart';
+import 'package:repair_shop/features/auth/domain/usecases/user_log_in.dart';
 import 'package:repair_shop/features/auth/domain/usecases/user_sign_up.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
 
 final serviceLocator = GetIt.instance;
 
 Future<void> initDependencies() async {
+  // shared data like token
+  serviceLocator.registerLazySingleton(() => SpService());
+
+  // app wide user info
+  serviceLocator.registerLazySingleton(() => AppWideUserCubit());
+
   _initAuth();
 }
 
@@ -15,8 +25,20 @@ void _initAuth() {
   serviceLocator
     ..registerFactory<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl())
     ..registerFactory<AuthRepository>(
-      () => AuthRepositoryImpl(authRemoteDataSource: serviceLocator()),
+      () => AuthRepositoryImpl(
+        authRemoteDataSource: serviceLocator(),
+        spService: serviceLocator(),
+      ),
     )
     ..registerFactory(() => UserSignUp(authRepository: serviceLocator()))
-    ..registerFactory(() => AuthBloc(userSignUp: serviceLocator()));
+    ..registerFactory(() => UserLogIn(authRepository: serviceLocator()))
+    ..registerFactory(() => CurrentUser(authRepository: serviceLocator()))
+    ..registerLazySingleton(
+      () => AuthBloc(
+        userSignUp: serviceLocator(),
+        userLogIn: serviceLocator(),
+        currentUser: serviceLocator(),
+        appWideUserCubit: serviceLocator(),
+      ),
+    );
 }
