@@ -70,7 +70,7 @@ class _SignupPageState extends State<SignupPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'Sign Up.',
+                      'Employee SignUp.',
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,

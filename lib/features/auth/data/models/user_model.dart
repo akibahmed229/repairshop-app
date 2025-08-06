@@ -5,6 +5,8 @@ class UserModel extends UserEntities {
     required super.id,
     required super.name,
     required super.email,
+    super.roles,
+    super.active,
     super.token,
   });
 
@@ -13,14 +15,27 @@ class UserModel extends UserEntities {
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       email: map['email'] ?? '',
+      roles:
+          (map['roles'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+          [],
+      active: map['active'] ?? true,
     );
   }
 
-  UserModel copyWith({String? id, String? name, String? email, String? token}) {
+  UserModel copyWith({
+    String? id,
+    String? name,
+    String? email,
+    List<String>? roles,
+    bool? active,
+    String? token,
+  }) {
     return UserModel(
       id: id ?? this.id,
       name: name ?? this.name,
       email: email ?? this.email,
+      roles: roles ?? this.roles,
+      active: active ?? this.active,
       token: token ?? this.token,
     );
   }

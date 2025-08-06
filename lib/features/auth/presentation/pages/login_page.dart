@@ -45,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
               if (state is AuthFailure) {
                 showSnackBar(context, state.message);
               } else if (state is AuthSuccess) {
-                showSnackBar(context, 'Token: ${state.user.token}');
+                showSnackBar(context, 'UserStatus: ${state.user.roles}');
 
                 _emailController.clear();
                 _passwordController.clear();
@@ -62,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'Sign In.',
+                      'Employee Login.',
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,

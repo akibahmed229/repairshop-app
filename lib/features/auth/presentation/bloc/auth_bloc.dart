@@ -27,7 +27,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
        _currentUser = currentUser,
        _appWideUserCubit = appWideUserCubit,
        super(AuthInitial()) {
-    on<AuthEvent>((_, emit) => AuthLoading());
+    on<AuthEvent>((_, emit) => emit(AuthLoading()));
     on<AuthSignUpEvent>(_onAuthSignUpEvent);
     on<AuthLogInEvent>(_onAuthLogInEvent);
     on<AuthIsUserLoggedInEvent>(_onAuthIsUserLoggedInEvent);
@@ -69,14 +69,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final res = await _currentUser(NoParams());
 
     res.fold(
-      (failure) {
-        print("Auth check failed: ${failure.message}");
-        emit(AuthFailure(failure.message));
-      },
-      (user) {
-        print("User loaded: ${user.email}, token: ${user.token}");
-        _updateAppWideUserState(user, emit);
-      },
+      (failure) => emit(AuthFailure(failure.message)),
+      (user) => _updateAppWideUserState(user, emit),
     );
   }
 
