@@ -16,19 +16,19 @@ void main() async {
         BlocProvider(create: (_) => serviceLocator<AuthBloc>()),
         BlocProvider(create: (_) => serviceLocator<AppWideUserCubit>()),
       ],
-      child: const MyApp(),
+      child: const RepairShop(),
     ),
   );
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class RepairShop extends StatefulWidget {
+  const RepairShop({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<RepairShop> createState() => _RepairShopState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _RepairShopState extends State<RepairShop> {
   @override
   void initState() {
     super.initState();
