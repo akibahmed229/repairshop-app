@@ -51,7 +51,7 @@ class _SignupPageState extends State<SignupPage> {
               } else if (state is AuthSuccess) {
                 showSnackBar(
                   context,
-                  'Heloo ${state.user.name} you can now login',
+                  'Hello ${state.user.name} you can now login',
                 );
 
                 _usernameController.clear();
