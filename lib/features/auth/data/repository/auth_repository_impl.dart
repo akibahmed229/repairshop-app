@@ -1,16 +1,22 @@
 import 'package:repair_shop/core/common/entities/user_entities.dart';
 import 'package:repair_shop/core/error/failure.dart';
 import 'package:repair_shop/core/error/server_execptions.dart';
+import 'package:repair_shop/core/network/connection_checker.dart';
 import 'package:repair_shop/core/utils/sp_service.dart';
+import 'package:repair_shop/features/auth/data/datasources/auth_local_data_source.dart';
 import 'package:repair_shop/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:repair_shop/features/auth/domain/repository/auth_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource authRemoteDataSource;
+  final AuthLocalDataSource authLocalDataSource;
+  final ConnectionChecker connectionChecker;
   final SpService spService;
   const AuthRepositoryImpl({
     required this.authRemoteDataSource,
+    required this.authLocalDataSource,
+    required this.connectionChecker,
     required this.spService,
   });
 
@@ -39,16 +45,23 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
-      final user = await authRemoteDataSource.logInWithEmailPassword(
-        email: email,
-        password: password,
-      );
+      if (await connectionChecker.isConnected) {
+        final user = await authRemoteDataSource.logInWithEmailPassword(
+          email: email,
+          password: password,
+        );
 
-      if (user.token!.isNotEmpty) {
-        spService.setToken(user.token!);
+        if (user.token?.isNotEmpty ?? false) {
+          spService.setToken(user.token!);
+          await authLocalDataSource.cacheUser(user);
+        }
+
+        return right(user);
+      } else {
+        return _getCachedUserData(
+          () async => await authLocalDataSource.getCachedUser(),
+        );
       }
-
-      return right(user);
     } on ServerExecptions catch (e) {
       return left(Failure(message: e.message));
     }
@@ -57,16 +70,34 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, UserEntities>> currentUserData() async {
     try {
-      final token = await spService.getToken();
-      final userData = await authRemoteDataSource.currentUserData(token);
+      if (await connectionChecker.isConnected) {
+        final token = await spService.getToken();
+        final userData = await authRemoteDataSource.currentUserData(token);
 
-      if (userData == null) {
-        return left(Failure(message: "User is not logged in"));
+        if (userData == null) {
+          return left(Failure(message: "User is not logged in"));
+        }
+
+        return right(userData);
+      } else {
+        return _getCachedUserData(
+          () async => await authLocalDataSource.getCachedUser(),
+        );
       }
-
-      return right(userData);
     } on ServerExecptions catch (e) {
       return left(Failure(message: e.message));
     }
+  }
+
+  Future<Either<Failure, UserEntities>> _getCachedUserData(
+    Future<UserEntities?> Function() fn,
+  ) async {
+    final cachedUser = await fn();
+
+    if (cachedUser == null) {
+      return left(Failure(message: "user not found"));
+    }
+
+    return right(cachedUser);
   }
 }
