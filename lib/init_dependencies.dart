@@ -13,6 +13,7 @@ import 'package:repair_shop/features/auth/domain/usecases/current_user.dart';
 import 'package:repair_shop/features/auth/domain/usecases/user_log_in.dart';
 import 'package:repair_shop/features/auth/domain/usecases/user_sign_up.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:repair_shop/features/techNotes/data/datasources/tech_note_local_data_source.dart';
 import 'package:repair_shop/features/techNotes/data/datasources/tech_note_remote_data_source.dart';
 import 'package:repair_shop/features/techNotes/data/repository/tech_note_repository_impl.dart';
 import 'package:repair_shop/features/techNotes/domain/repository/tech_note_repository.dart';
@@ -21,6 +22,33 @@ import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.
 import 'package:sqflite/sqflite.dart';
 
 final serviceLocator = GetIt.instance;
+
+String createUserTable =
+    '''
+  CREATE TABLE ${AppSecrets.usersTable}(
+    id TEXT PRIMARY KEY,
+    name TEXT,
+    email TEXT,
+    roles TEXT,
+    active INTEGER,
+    token TEXT
+  );
+''';
+
+String createTechNotesTable =
+    '''
+  CREATE TABLE ${AppSecrets.techNotesTable}(
+      id TEXT PRIMARY KEY,
+      userId TEXT,
+      title TEXT,
+      content TEXT,
+      completed INTEGER,
+      createdAt TEXT,
+      updatedAt TEXT,
+      userName TEXT,
+      userEmail TEXT
+  );
+''';
 
 Future<void> initDependencies() async {
   // shared data like token
@@ -39,10 +67,9 @@ Future<void> initDependencies() async {
   // Local database initiate
   final db = await openDatabase(
     join(await getDatabasesPath(), AppSecrets.sqfliteDbName),
-    onCreate: (db, version) {
-      return db.execute(
-        'CREATE TABLE users(id TEXT PRIMARY KEY, name TEXT, email TEXT, roles TEXT, active INTEGER, token TEXT)',
-      );
+    onCreate: (db, version) async {
+      await db.execute(createUserTable);
+      await db.execute(createTechNotesTable);
     },
     version: 1,
   );
@@ -84,11 +111,20 @@ void _initTechNote() {
     ..registerFactory<TechNoteRemoteDataSource>(
       () => TechNoteRemoteDataSourceImpl(),
     )
+    ..registerFactory<TechNoteLocalDataSource>(
+      () => TechNoteLocalDataSourceImpl(database: serviceLocator()),
+    )
     ..registerFactory<TechNoteRepository>(
-      () => TechNoteRepositoryImpl(techNoteRemoteDataSource: serviceLocator()),
+      () => TechNoteRepositoryImpl(
+        techNoteRemoteDataSource: serviceLocator(),
+        techNoteLocalDataSource: serviceLocator(),
+        connectionChecker: serviceLocator(),
+      ),
     )
     ..registerFactory(
       () => GetAllTechNotes(techNoteRepository: serviceLocator()),
     )
-    ..registerFactory(() => TechNoteBloc(getAllTechNotes: serviceLocator()));
+    ..registerLazySingleton(
+      () => TechNoteBloc(getAllTechNotes: serviceLocator()),
+    );
 }
