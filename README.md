@@ -121,17 +121,3 @@ This project is licensed under the [MIT License](LICENSE).
 
 **Akib Ahmed** — _Software Engineer & Final Year Project Contributor_
 Feel free to connect or collaborate!
-
-```
-
----
-
-Let me know if you’d like:
-
-- a `CONTRIBUTING.md`
-- a `LICENSE` template
-- a backend version of this README
-- or badge support (for build status, version, etc.)
-
-Happy coding, Akib!
-```
