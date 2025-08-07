@@ -10,8 +10,7 @@ import 'package:repair_shop/features/auth/presentation/widgets/auth_gradient_but
 
 class SignupPage extends StatefulWidget {
   // Static method to create a route for the SignupPage
-  static router() =>
-      MaterialPageRoute(builder: (context) => const SignupPage());
+  static route() => MaterialPageRoute(builder: (context) => const SignupPage());
 
   const SignupPage({super.key});
 

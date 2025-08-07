@@ -7,6 +7,7 @@ import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:repair_shop/features/auth/presentation/pages/signup_page.dart';
 import 'package:repair_shop/features/auth/presentation/widgets/auth_field.dart';
 import 'package:repair_shop/features/auth/presentation/widgets/auth_gradient_button.dart';
+import 'package:repair_shop/features/techNotes/presentation/pages/tech_note_page.dart';
 
 class LoginPage extends StatefulWidget {
   // Static method to create a route for the SignupPage
@@ -45,10 +46,14 @@ class _LoginPageState extends State<LoginPage> {
               if (state is AuthFailure) {
                 showSnackBar(context, state.message);
               } else if (state is AuthSuccess) {
-                showSnackBar(context, 'UserStatus: ${state.user.roles}');
-
                 _emailController.clear();
                 _passwordController.clear();
+
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  TechNotePage.route(),
+                  (_) => false,
+                );
               }
             },
             builder: (context, state) {
@@ -96,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 20),
                     GestureDetector(
                       onTap: () {
-                        Navigator.push(context, SignupPage.router());
+                        Navigator.push(context, SignupPage.route());
                       },
                       child: RichText(
                         text: TextSpan(

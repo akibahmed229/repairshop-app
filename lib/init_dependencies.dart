@@ -13,6 +13,11 @@ import 'package:repair_shop/features/auth/domain/usecases/current_user.dart';
 import 'package:repair_shop/features/auth/domain/usecases/user_log_in.dart';
 import 'package:repair_shop/features/auth/domain/usecases/user_sign_up.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:repair_shop/features/techNotes/data/datasources/tech_note_remote_data_source.dart';
+import 'package:repair_shop/features/techNotes/data/repository/tech_note_repository_impl.dart';
+import 'package:repair_shop/features/techNotes/domain/repository/tech_note_repository.dart';
+import 'package:repair_shop/features/techNotes/domain/usecases/get_all_tech_notes.dart';
+import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
 import 'package:sqflite/sqflite.dart';
 
 final serviceLocator = GetIt.instance;
@@ -44,6 +49,7 @@ Future<void> initDependencies() async {
   serviceLocator.registerLazySingleton(() => db);
 
   _initAuth();
+  _initTechNote();
 }
 
 void _initAuth() {
@@ -71,4 +77,18 @@ void _initAuth() {
         appWideUserCubit: serviceLocator(),
       ),
     );
+}
+
+void _initTechNote() {
+  serviceLocator
+    ..registerFactory<TechNoteRemoteDataSource>(
+      () => TechNoteRemoteDataSourceImpl(),
+    )
+    ..registerFactory<TechNoteRepository>(
+      () => TechNoteRepositoryImpl(techNoteRemoteDataSource: serviceLocator()),
+    )
+    ..registerFactory(
+      () => GetAllTechNotes(techNoteRepository: serviceLocator()),
+    )
+    ..registerFactory(() => TechNoteBloc(getAllTechNotes: serviceLocator()));
 }

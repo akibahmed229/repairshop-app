@@ -4,6 +4,8 @@ import 'package:repair_shop/core/common/cubits/app_wide_user/app_wide_user_cubit
 import 'package:repair_shop/core/theme/theme.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:repair_shop/features/auth/presentation/pages/login_page.dart';
+import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
+import 'package:repair_shop/features/techNotes/presentation/pages/tech_note_page.dart';
 import 'package:repair_shop/init_dependencies.dart';
 
 void main() async {
@@ -15,6 +17,7 @@ void main() async {
       providers: [
         BlocProvider(create: (_) => serviceLocator<AuthBloc>()),
         BlocProvider(create: (_) => serviceLocator<AppWideUserCubit>()),
+        BlocProvider(create: (_) => serviceLocator<TechNoteBloc>()),
       ],
       child: const RepairShop(),
     ),
@@ -46,9 +49,7 @@ class _RepairShopState extends State<RepairShop> {
         selector: (state) => state is AppWideUserLoggedIn,
         builder: (context, isLoggedIn) {
           if (isLoggedIn) {
-            return Scaffold(
-              body: Center(child: Text("Welcome to the HomeScreen")),
-            );
+            return TechNotePage();
           } else {
             return const LoginPage();
           }
