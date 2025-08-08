@@ -28,7 +28,7 @@ class TechNoteLocalDataSourceImpl implements TechNoteLocalDataSource {
 
       await batch.commit(noResult: true);
     } catch (e) {
-      throw ServerExecptions('Failed to clear cached tech notes: $e');
+      throw ServerExecptions('Failed to cache notes: $e');
     }
   }
 
@@ -41,7 +41,7 @@ class TechNoteLocalDataSourceImpl implements TechNoteLocalDataSource {
 
       return maps.map((note) => TechNoteModel.fromJson(note)).toList();
     } catch (e) {
-      throw ServerExecptions('Failed to get cached tech notes: $e');
+      throw ServerExecptions('Failed to get cached notes: $e');
     }
   }
 
@@ -50,7 +50,7 @@ class TechNoteLocalDataSourceImpl implements TechNoteLocalDataSource {
     try {
       await database.delete(AppSecrets.techNotesTable);
     } catch (e) {
-      throw ServerExecptions('Failed to cache tech notes: $e');
+      throw ServerExecptions('Failed to clear cached notes: $e');
     }
   }
 }
