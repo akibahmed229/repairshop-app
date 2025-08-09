@@ -26,5 +26,12 @@ class AppTheme {
       focusedBorder: _border(color: AppPallete.gradient2),
       errorBorder: _border(color: AppPallete.errorColor),
     ),
+
+    dropdownMenuTheme: DropdownMenuThemeData(
+      menuStyle: MenuStyle(
+        backgroundColor: MaterialStatePropertyAll(AppPallete.backgroundColor),
+        surfaceTintColor: MaterialStatePropertyAll(AppPallete.backgroundColor),
+      ),
+    ),
   );
 }
