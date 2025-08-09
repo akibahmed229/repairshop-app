@@ -60,9 +60,15 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
           key: _formKey,
           child: ListView(
             children: [
-              const Text(
-                "Edit Note",
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+              Row(
+                children: [
+                  Icon(Icons.edit_note, size: 36),
+                  SizedBox(width: 10),
+                  const Text(
+                    "Edit Note",
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
 
@@ -114,7 +120,7 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today),
+                      const Icon(Icons.event_note),
                       SizedBox(width: 6),
                       Text("${formatDateByMMMYYYY(widget.note.createdAt)}"),
                     ],
@@ -122,7 +128,7 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
 
                   Row(
                     children: [
-                      const Icon(Icons.update),
+                      const Icon(Icons.history_toggle_off),
                       SizedBox(width: 6),
                       Text("${formatDateByMMMYYYY(widget.note.updatedAt)}"),
                     ],

@@ -38,10 +38,17 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
           key: _formKey,
           child: ListView(
             children: [
-              const Text(
-                "New Note",
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+              Row(
+                children: [
+                  Icon(Icons.note_add_outlined, size: 36),
+                  SizedBox(width: 10),
+                  const Text(
+                    "New Note",
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
+
               const SizedBox(height: 20),
 
               // Title Input

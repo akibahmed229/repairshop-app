@@ -32,15 +32,18 @@ class TechNoteCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
             Row(
               children: [
-                Text(
+                Icon(
+                  note.completed ? Icons.check_circle : Icons.pending_actions,
+                ),
+                const SizedBox(width: 6),
+                const Text(
                   "Status: ",
-                  style: const TextStyle(fontWeight: FontWeight.w500),
+                  style: TextStyle(fontWeight: FontWeight.w500),
                 ),
                 Text(
-                  '${note.completed ? "completed" : "opened"}',
+                  note.completed ? "Completed" : "Opened",
                   style: TextStyle(
                     color: note.completed ? Colors.green : Colors.red,
                     fontWeight: FontWeight.bold,
@@ -48,8 +51,22 @@ class TechNoteCard extends StatelessWidget {
                 ),
               ],
             ),
+
             const SizedBox(height: 4),
-            Text("Owner: ${note.userName}"),
+            Row(
+              children: [
+                const Icon(Icons.person),
+                const SizedBox(width: 6),
+                const Text(
+                  "Owner: ",
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
+                Text(
+                  "${note.userName}",
+                  style: TextStyle(color: Colors.greenAccent),
+                ),
+              ],
+            ),
 
             const SizedBox(height: 20),
             Row(
@@ -57,21 +74,16 @@ class TechNoteCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(
-                      Icons.calendar_today,
-                      size: 16,
-                      color: Colors.white70,
-                    ),
-                    SizedBox(width: 5),
-                    Text("${formatDateByMMMYYYY(note.createdAt)}"),
+                    const Icon(Icons.event_note, size: 16),
+                    const SizedBox(width: 5),
+                    Text(formatDateByMMMYYYY(note.createdAt)),
                   ],
                 ),
-
                 Row(
                   children: [
-                    const Icon(Icons.update, size: 16, color: Colors.white70),
-                    SizedBox(width: 5),
-                    Text("${formatDateByMMMYYYY(note.updatedAt)}"),
+                    const Icon(Icons.history_toggle_off, size: 16),
+                    const SizedBox(width: 5),
+                    Text(formatDateByMMMYYYY(note.updatedAt)),
                   ],
                 ),
               ],
