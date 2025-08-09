@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:repair_shop/core/utils/format_date.dart';
 import 'package:repair_shop/features/techNotes/domain/entities/tech_note_entities.dart';
+import 'package:repair_shop/features/techNotes/presentation/pages/edit_tech_note_page.dart';
 
 class TechNoteCard extends StatelessWidget {
   final TechNoteEntities note;
@@ -20,7 +21,12 @@ class TechNoteCard extends StatelessWidget {
               '${note.title}',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            IconButton(onPressed: () {}, icon: Icon(Icons.edit_rounded)),
+            IconButton(
+              onPressed: () {
+                Navigator.push(context, EditTechNotePage.route(note));
+              },
+              icon: Icon(Icons.edit_rounded),
+            ),
           ],
         ),
         subtitle: Column(
@@ -43,9 +49,33 @@ class TechNoteCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 4),
-            Text("Created: ${formatDateByMMMYYYY(note.createdAt)}"),
-            Text("Updated: ${formatDateByMMMYYYY(note.updatedAt)}"),
             Text("Owner: ${note.userName}"),
+
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_today,
+                      size: 16,
+                      color: Colors.white70,
+                    ),
+                    SizedBox(width: 5),
+                    Text("${formatDateByMMMYYYY(note.createdAt)}"),
+                  ],
+                ),
+
+                Row(
+                  children: [
+                    const Icon(Icons.update, size: 16, color: Colors.white70),
+                    SizedBox(width: 5),
+                    Text("${formatDateByMMMYYYY(note.updatedAt)}"),
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
       ),

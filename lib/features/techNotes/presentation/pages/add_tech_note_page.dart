@@ -50,7 +50,6 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
               TechNoteEditor(
                 controller: _titleController,
                 hintText: "Enter a short, clear task title",
-                maxLines: 2,
               ),
               const SizedBox(height: 20),
 
@@ -60,7 +59,7 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
               TechNoteEditor(
                 controller: _contentController,
                 hintText: "Describe the work details, steps, or requirements",
-                maxLines: 8,
+                minLines: 8,
               ),
               const SizedBox(height: 20),
 
