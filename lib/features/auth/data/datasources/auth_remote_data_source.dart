@@ -88,7 +88,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
 
       final userResponse = await http.get(
-        Uri.parse('${AppSecrets.backendUri}/api/users'),
+        Uri.parse('${AppSecrets.backendUri}/api/user'),
         headers: {'Content-Type': 'application/json', 'x-auth-token': token},
       );
 

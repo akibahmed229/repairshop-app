@@ -19,11 +19,13 @@ class TechNoteModel extends TechNoteEntities {
       userId: json['userId'] as String,
       title: json['title'] as String,
       content: json['content'] as String,
-      completed: json['completed'] == 1,
+      completed: json['completed'] is int
+          ? json['completed'] == 1
+          : json['completed'] == true,
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
-      userName: json['userName'] as String ?? "",
-      userEmail: json['userEmail'] as String ?? "",
+      userName: json['userName'] ?? "",
+      userEmail: json['userEmail'] ?? "",
     );
   }
 

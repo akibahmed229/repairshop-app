@@ -35,7 +35,7 @@ class TechNoteCard extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  note.completed ? Icons.check_circle : Icons.pending_actions,
+                  note.completed ? Icons.done_rounded : Icons.pending_actions,
                 ),
                 const SizedBox(width: 6),
                 const Text(
