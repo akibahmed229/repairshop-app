@@ -1,5 +1,6 @@
 import 'package:repair_shop/core/common/entities/user_entities.dart';
 import 'package:repair_shop/core/error/failure.dart';
+import 'package:repair_shop/core/error/other_execptions.dart';
 import 'package:repair_shop/core/error/server_execptions.dart';
 import 'package:repair_shop/core/network/connection_checker.dart';
 import 'package:repair_shop/core/utils/sp_service.dart';
@@ -13,6 +14,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthLocalDataSource authLocalDataSource;
   final ConnectionChecker connectionChecker;
   final SpService spService;
+
   const AuthRepositoryImpl({
     required this.authRemoteDataSource,
     required this.authLocalDataSource,
@@ -32,9 +34,9 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
       );
-
       return right(user);
-    } on ServerExecptions catch (e) {
+    } on OtherExecptions catch (e) {
+      // signup is strictly online, so show clean error
       return left(Failure(message: e.message));
     }
   }
@@ -55,14 +57,13 @@ class AuthRepositoryImpl implements AuthRepository {
           spService.setToken(user.token!);
           await authLocalDataSource.cacheUser(user);
         }
-
         return right(user);
-      } else {
-        return _getCachedUserData(
-          () async => await authLocalDataSource.getCachedUser(),
-        );
       }
-    } on ServerExecptions catch (e) {
+      // If not connected
+      return _getCachedUserData(() => authLocalDataSource.getCachedUser());
+    } on ServerExecptions catch (_) {
+      return _getCachedUserData(() => authLocalDataSource.getCachedUser());
+    } on OtherExecptions catch (e) {
       return left(Failure(message: e.message));
     }
   }
@@ -79,25 +80,25 @@ class AuthRepositoryImpl implements AuthRepository {
         }
 
         return right(userData);
-      } else {
-        return _getCachedUserData(
-          () async => await authLocalDataSource.getCachedUser(),
-        );
       }
-    } on ServerExecptions catch (e) {
+      // If not connected or no data returned
+      return _getCachedUserData(() => authLocalDataSource.getCachedUser());
+    } on ServerExecptions catch (_) {
+      return _getCachedUserData(() => authLocalDataSource.getCachedUser());
+    } on OtherExecptions catch (e) {
       return left(Failure(message: e.message));
     }
   }
+
+  // ----------------- Helper Methods -----------------
 
   Future<Either<Failure, UserEntities>> _getCachedUserData(
     Future<UserEntities?> Function() fn,
   ) async {
     final cachedUser = await fn();
-
     if (cachedUser == null) {
-      return left(Failure(message: "user not found"));
+      return left(Failure(message: "User not found"));
     }
-
     return right(cachedUser);
   }
 }

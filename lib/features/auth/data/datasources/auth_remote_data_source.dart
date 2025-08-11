@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:repair_shop/core/error/other_execptions.dart';
 import 'package:repair_shop/core/error/server_execptions.dart';
 import 'package:repair_shop/core/secrets/app_secrets.dart';
 import 'package:repair_shop/features/auth/data/models/user_model.dart';
@@ -21,6 +24,19 @@ abstract interface class AuthRemoteDataSource {
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
+  // Reusable network error handler
+  Never _handleNetworkError(Object e) {
+    if (e is SocketException) {
+      throw ServerExecptions('No internet connection or server unreachable');
+    } else if (e is http.ClientException) {
+      throw ServerExecptions('HTTP connection error — server unreachable');
+    } else if (e is TimeoutException) {
+      throw ServerExecptions('Request timed out — server not responding');
+    } else {
+      throw OtherExecptions('Unexpected error: ${e.toString()}');
+    }
+  }
+
   @override
   Future<UserModel> signUpWithEmailPassword({
     required String name,
@@ -40,7 +56,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       return UserModel.formJson(jsonDecode(res.body));
     } catch (e) {
-      throw ServerExecptions('Sign up failed: ${e.toString()}');
+      throw OtherExecptions('Sign up failed: ${e.toString()}');
     }
   }
 
@@ -64,7 +80,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
       return UserModel.formJson(data).copyWith(token: data['token']);
     } catch (e) {
-      throw ServerExecptions('Login failed: ${e.toString()}');
+      _handleNetworkError(e);
     }
   }
 
@@ -100,7 +116,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         jsonDecode(userResponse.body),
       ).copyWith(token: token);
     } catch (e) {
-      throw ServerExecptions('Failed to fetch current user data: $e');
+      _handleNetworkError(e);
     }
   }
 }

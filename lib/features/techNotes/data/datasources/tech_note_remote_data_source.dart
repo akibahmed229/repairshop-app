@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:repair_shop/core/error/other_execptions.dart';
 import 'package:repair_shop/core/error/server_execptions.dart';
 import 'package:repair_shop/core/secrets/app_secrets.dart';
 import 'package:repair_shop/features/techNotes/data/models/tech_note_model.dart';
@@ -10,6 +13,19 @@ abstract interface class TechNoteRemoteDataSource {
 }
 
 class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
+  // Reusable network error handler
+  Never _handleNetworkError(Object e) {
+    if (e is SocketException) {
+      throw ServerExecptions('No internet connection or server unreachable');
+    } else if (e is http.ClientException) {
+      throw ServerExecptions('HTTP connection error — server unreachable');
+    } else if (e is TimeoutException) {
+      throw ServerExecptions('Request timed out — server not responding');
+    } else {
+      throw OtherExecptions('Unexpected error: ${e.toString()}');
+    }
+  }
+
   @override
   Future<List<TechNoteModel>> getAllTechNotes() async {
     try {
@@ -29,7 +45,7 @@ class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
           .map((noteJson) => TechNoteModel.fromJson(noteJson))
           .toList();
     } catch (e) {
-      throw ServerExecptions('Failed to fetch notes: ${e.toString()}');
+      _handleNetworkError(e);
     }
   }
 }
