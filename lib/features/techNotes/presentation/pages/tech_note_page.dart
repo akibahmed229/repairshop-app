@@ -33,7 +33,7 @@ class _TechNotePageState extends State<TechNotePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: IndexedStack(index: _selectedIndex, children: _pages),
 
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(12),

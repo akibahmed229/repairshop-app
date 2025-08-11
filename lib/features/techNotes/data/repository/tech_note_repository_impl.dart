@@ -131,7 +131,9 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
         return right(users);
       } else {
         return left(
-          Failure(message: "Deleting note failed no internet connection!"),
+          Failure(
+            message: "Getting all note users failed no internet connection!",
+          ),
         );
       }
     } on OtherExecptions catch (e) {

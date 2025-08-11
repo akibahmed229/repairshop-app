@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/core/utils/format_date.dart';
 import 'package:repair_shop/features/techNotes/domain/entities/tech_note_entities.dart';
 import 'package:repair_shop/features/techNotes/presentation/pages/edit_tech_note_page.dart';
@@ -25,7 +26,10 @@ class TechNoteCard extends StatelessWidget {
               onPressed: () {
                 Navigator.push(context, EditTechNotePage.route(note));
               },
-              icon: Icon(Icons.edit_rounded),
+              icon: CircleAvatar(
+                child: const Icon(Icons.edit_rounded),
+                backgroundColor: AppPallete.borderColor.withOpacity(0.5),
+              ),
             ),
           ],
         ),

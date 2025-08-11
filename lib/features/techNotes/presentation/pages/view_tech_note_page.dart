@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:repair_shop/core/common/widgets/loader.dart';
 import 'package:repair_shop/core/utils/show_snackbar.dart';
+import 'package:repair_shop/features/techNotes/domain/entities/tech_note_entities.dart';
 import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
 import 'package:repair_shop/features/techNotes/presentation/widgets/tech_note_card.dart';
 
 class ViewTechNotePage extends StatefulWidget {
+  static route() =>
+      MaterialPageRoute(builder: (context) => const ViewTechNotePage());
   const ViewTechNotePage({super.key});
 
   @override
@@ -13,6 +16,8 @@ class ViewTechNotePage extends StatefulWidget {
 }
 
 class _ViewTechNotePageState extends State<ViewTechNotePage> {
+  int noteCount = 0;
+  List<TechNoteEntities> notes = [];
   @override
   void initState() {
     super.initState();
@@ -35,20 +40,31 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
           }
 
           if (state is TechNotesGetSuccess) {
-            return Scrollbar(
+            noteCount = state.notes.length;
+            notes = state.notes;
+          }
+
+          // Default widget when no condition matches
+          return RefreshIndicator(
+            onRefresh: () async {
+              context.read<TechNoteBloc>().add(TechNotesGetEvent());
+
+              // Wait for the reload to complete.
+              // You might want to listen to state changes or
+              // delay here for UX smoothness.
+              await Future.delayed(const Duration(milliseconds: 500));
+            },
+            child: Scrollbar(
               child: ListView.builder(
-                itemCount: state.notes.length,
+                itemCount: notes.length,
                 itemBuilder: (context, index) {
-                  final note = state.notes[index];
+                  final note = notes[index];
 
                   return TechNoteCard(note: note);
                 },
               ),
-            );
-          }
-
-          // Default widget when no condition matches
-          return const SizedBox.shrink();
+            ),
+          );
         },
       ),
     );

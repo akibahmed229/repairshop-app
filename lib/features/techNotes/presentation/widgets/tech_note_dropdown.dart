@@ -1,30 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart';
 
-class TechNoteDropdown extends StatefulWidget {
-  final String assignedTo;
+class TechNoteDropdown extends StatelessWidget {
+  final String? assignedTo;
   final List<String> users;
+  final ValueChanged<String?>? onChanged;
 
   const TechNoteDropdown({
-    super.key,
-    required this.users,
     required this.assignedTo,
+    required this.users,
+    this.onChanged,
   });
-
-  @override
-  State<TechNoteDropdown> createState() => _TechNoteDropdownState();
-}
-
-class _TechNoteDropdownState extends State<TechNoteDropdown> {
-  // Set my dropdown’s current selection to whatever the parent widget gave me as the starting value.
-  late String _selectedUser;
-
-  @override
-  void initState() {
-    super.initState();
-    // Set my dropdown’s current selection to whatever the parent widget gave me as the starting value.
-    _selectedUser = widget.assignedTo;
-  }
 
   InputDecoration _dropdownDecoration() {
     return InputDecoration(
@@ -37,17 +23,13 @@ class _TechNoteDropdownState extends State<TechNoteDropdown> {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: _selectedUser,
-      items: widget.users
-          .map((user) => DropdownMenuItem(value: user, child: Text(user)))
-          .toList(),
+      value: assignedTo,
       decoration: _dropdownDecoration(),
       dropdownColor: AppPallete.borderColor,
-      onChanged: (value) {
-        if (value != null) {
-          setState(() => _selectedUser = value);
-        }
-      },
+      items: users.map((user) {
+        return DropdownMenuItem(value: user, child: Text(user));
+      }).toList(),
+      onChanged: onChanged,
     );
   }
 }
