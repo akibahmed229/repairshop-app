@@ -29,6 +29,7 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
           return left(Failure(message: "No notes exist"));
         }
 
+        await techNoteLocalDataSource.clearTechNotes();
         await techNoteLocalDataSource.cacheTechNotes(notes);
 
         return right(notes);
