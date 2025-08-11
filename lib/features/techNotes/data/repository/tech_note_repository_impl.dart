@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:repair_shop/core/common/entities/user_entities.dart';
 import 'package:repair_shop/core/error/failure.dart';
 import 'package:repair_shop/core/error/other_execptions.dart';
 import 'package:repair_shop/core/error/server_execptions.dart';
@@ -45,6 +46,94 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
       return _getCachedTechNotesData(
         () => techNoteLocalDataSource.getCachedTechNotes(),
       );
+    } on OtherExecptions catch (e) {
+      return left(Failure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, TechNoteEntities>> createTechNote({
+    required String userId,
+    required String title,
+    required String content,
+  }) async {
+    try {
+      if (await connectionChecker.isConnected) {
+        final note = await techNoteRemoteDataSource.createTechNote(
+          userId: userId,
+          title: title,
+          content: content,
+        );
+
+        return right(note);
+      } else {
+        return left(
+          Failure(message: "Creating note failed no internet connection!"),
+        );
+      }
+    } on OtherExecptions catch (e) {
+      return left(Failure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> updateTechNote({
+    required String id,
+    required String userId,
+    required String title,
+    required String content,
+    required bool completed,
+  }) async {
+    try {
+      if (await connectionChecker.isConnected) {
+        final note = await techNoteRemoteDataSource.updateTechNote(
+          id: id,
+          userId: userId,
+          title: title,
+          content: content,
+          completed: completed,
+        );
+
+        return right(note);
+      } else {
+        return left(
+          Failure(message: "Updating note failed no internet connection!"),
+        );
+      }
+    } on OtherExecptions catch (e) {
+      return left(Failure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> deleteTechNote({required String id}) async {
+    try {
+      if (await connectionChecker.isConnected) {
+        final note = await techNoteRemoteDataSource.deleteTechNote(id: id);
+
+        return right(note);
+      } else {
+        return left(
+          Failure(message: "Deleting note failed no internet connection!"),
+        );
+      }
+    } on OtherExecptions catch (e) {
+      return left(Failure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<UserEntities>>> getAllTechNoteUsers() async {
+    try {
+      if (await connectionChecker.isConnected) {
+        final users = await techNoteRemoteDataSource.getAllTechNoteUsers();
+
+        return right(users);
+      } else {
+        return left(
+          Failure(message: "Deleting note failed no internet connection!"),
+        );
+      }
     } on OtherExecptions catch (e) {
       return left(Failure(message: e.message));
     }

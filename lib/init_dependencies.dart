@@ -17,7 +17,11 @@ import 'package:repair_shop/features/techNotes/data/datasources/tech_note_local_
 import 'package:repair_shop/features/techNotes/data/datasources/tech_note_remote_data_source.dart';
 import 'package:repair_shop/features/techNotes/data/repository/tech_note_repository_impl.dart';
 import 'package:repair_shop/features/techNotes/domain/repository/tech_note_repository.dart';
+import 'package:repair_shop/features/techNotes/domain/usecases/create_tech_note.dart';
+import 'package:repair_shop/features/techNotes/domain/usecases/delete_tech_note.dart';
+import 'package:repair_shop/features/techNotes/domain/usecases/get_all_tech_note_users.dart';
 import 'package:repair_shop/features/techNotes/domain/usecases/get_all_tech_notes.dart';
+import 'package:repair_shop/features/techNotes/domain/usecases/update_tech_note.dart';
 import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -124,7 +128,25 @@ void _initTechNote() {
     ..registerFactory(
       () => GetAllTechNotes(techNoteRepository: serviceLocator()),
     )
+    ..registerFactory(
+      () => CreateTechNote(techNoteRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => UpdateTechNote(techNoteRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => DeleteTechNote(techNoteRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => GetAllTechNoteUsers(techNoteRepository: serviceLocator()),
+    )
     ..registerLazySingleton(
-      () => TechNoteBloc(getAllTechNotes: serviceLocator()),
+      () => TechNoteBloc(
+        getAllTechNotes: serviceLocator(),
+        createTechNote: serviceLocator(),
+        updateTechNote: serviceLocator(),
+        deleteTechNote: serviceLocator(),
+        getAllTechNoteUsers: serviceLocator(),
+      ),
     );
 }

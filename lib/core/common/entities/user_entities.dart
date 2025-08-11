@@ -4,6 +4,8 @@ class UserEntities {
   final String email;
   final List<String>? roles;
   final bool? active;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final String? token;
 
   const UserEntities({
@@ -12,6 +14,8 @@ class UserEntities {
     required this.email,
     required this.roles,
     required this.active,
+    this.createdAt,
+    this.updatedAt,
     this.token,
   });
 }

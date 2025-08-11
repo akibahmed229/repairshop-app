@@ -24,3 +24,20 @@ final class TechNotesGetSuccess extends TechNoteState {
 
   const TechNotesGetSuccess(this.notes);
 }
+
+final class TechNoteCreateSuccess extends TechNoteState {
+  final TechNoteEntities note;
+
+  const TechNoteCreateSuccess(this.note);
+}
+
+final class TechNoteUpdateAndDeleteSuccess extends TechNoteState {
+  final String message;
+
+  const TechNoteUpdateAndDeleteSuccess(this.message);
+}
+
+final class TechNotesGetAllUsersSuccess extends TechNoteState {
+  final List<UserEntities> users;
+  TechNotesGetAllUsersSuccess(this.users);
+}

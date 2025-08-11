@@ -7,6 +7,8 @@ class UserModel extends UserEntities {
     required super.email,
     super.roles,
     super.active,
+    super.createdAt,
+    super.updatedAt,
     super.token,
   });
 
@@ -19,6 +21,8 @@ class UserModel extends UserEntities {
           (map['roles'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
           [],
       active: map['active'] ?? true,
+      createdAt: DateTime.parse(map['createdAt']),
+      updatedAt: DateTime.parse(map['updatedAt']),
     );
   }
 
@@ -28,6 +32,8 @@ class UserModel extends UserEntities {
     String? email,
     List<String>? roles,
     bool? active,
+    DateTime? createdAt,
+    DateTime? updatedAt,
     String? token,
   }) {
     return UserModel(
@@ -36,6 +42,8 @@ class UserModel extends UserEntities {
       email: email ?? this.email,
       roles: roles ?? this.roles,
       active: active ?? this.active,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       token: token ?? this.token,
     );
   }
