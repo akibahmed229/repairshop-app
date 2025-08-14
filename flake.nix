@@ -48,6 +48,7 @@
         ANDROID_HOME = "${toString ./android-sdk}";
         JAVA_HOME = "${pkgs.jdk17}";
         PKG_CONFIG_PATH = "${pkgs.sysprof}/lib/pkgconfig";
+        CHROME_EXECUTABLE = "${pkgs.chromium}/bin/chromium";
 
         buildInputs = with pkgs; [
           flutter
@@ -82,6 +83,9 @@
 
           # Generate local.properties for Gradle
           echo "sdk.dir=$ANDROID_SDK_ROOT" > ./android/local.properties
+
+          flutter config --jdk-dir="$JAVA_HOME"
+          flutter config --enable-web
         '';
       };
   };

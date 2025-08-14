@@ -47,3 +47,6 @@ android-sdk/
 
 # secrets 
 lib/core/secrets/app_secrets.dart
+
+# dev env 
+.direnv/
