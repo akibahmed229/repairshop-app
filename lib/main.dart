@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:repair_shop/core/common/cubits/app_wide_user/app_wide_user_cubit.dart';
 import 'package:repair_shop/core/theme/theme.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
@@ -10,6 +11,7 @@ import 'package:repair_shop/init_dependencies.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await initDependencies();
 
   runApp(

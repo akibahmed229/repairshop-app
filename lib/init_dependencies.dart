@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:path/path.dart';
 import 'package:repair_shop/core/common/cubits/app_wide_user/app_wide_user_cubit.dart';
+import 'package:repair_shop/core/common/sqflite/sqflite_schema.dart';
 import 'package:repair_shop/core/network/connection_checker.dart';
 import 'package:repair_shop/core/secrets/app_secrets.dart';
 import 'package:repair_shop/core/utils/sp_service.dart';
@@ -27,33 +28,6 @@ import 'package:sqflite/sqflite.dart';
 
 final serviceLocator = GetIt.instance;
 
-String createUserTable =
-    '''
-  CREATE TABLE ${AppSecrets.usersTable}(
-    id TEXT PRIMARY KEY,
-    name TEXT,
-    email TEXT,
-    roles TEXT,
-    active INTEGER,
-    token TEXT
-  );
-''';
-
-String createTechNotesTable =
-    '''
-  CREATE TABLE ${AppSecrets.techNotesTable}(
-      id TEXT PRIMARY KEY,
-      userId TEXT,
-      title TEXT,
-      content TEXT,
-      completed INTEGER,
-      createdAt TEXT,
-      updatedAt TEXT,
-      userName TEXT,
-      userEmail TEXT
-  );
-''';
-
 Future<void> initDependencies() async {
   // shared data like token
   serviceLocator.registerLazySingleton(() => SpService());
@@ -72,8 +46,9 @@ Future<void> initDependencies() async {
   final db = await openDatabase(
     join(await getDatabasesPath(), AppSecrets.sqfliteDbName),
     onCreate: (db, version) async {
-      await db.execute(createUserTable);
-      await db.execute(createTechNotesTable);
+      await db.execute(SqfliteSchema.createUserTable);
+      await db.execute(SqfliteSchema.createTechNotesTable);
+      await db.execute(SqfliteSchema.createTechNoteUsersTable);
     },
     version: 1,
   );

@@ -46,7 +46,7 @@ app.*.map.json
 android-sdk/
 
 # secrets 
-lib/core/secrets/app_secrets.dart
+.env
 
 # dev env 
 .direnv/
