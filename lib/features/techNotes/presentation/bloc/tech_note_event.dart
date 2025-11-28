@@ -10,11 +10,11 @@ final class TechNotesGetEvent extends TechNoteEvent {
 }
 
 final class TechNoteCreateEvent extends TechNoteEvent {
-  String userId;
-  String title;
-  String content;
+  final String userId;
+  final String title;
+  final String content;
 
-  TechNoteCreateEvent({
+  const TechNoteCreateEvent({
     required this.userId,
     required this.title,
     required this.content,
@@ -22,13 +22,13 @@ final class TechNoteCreateEvent extends TechNoteEvent {
 }
 
 final class TechNoteUpdateEvent extends TechNoteEvent {
-  String id;
-  String userId;
-  String title;
-  String content;
-  bool completed;
+  final String id;
+  final String userId;
+  final String title;
+  final String content;
+  final bool completed;
 
-  TechNoteUpdateEvent({
+  const TechNoteUpdateEvent({
     required this.id,
     required this.userId,
     required this.title,

@@ -86,6 +86,7 @@
 
           flutter config --jdk-dir="$JAVA_HOME"
           flutter config --enable-web
+          flutter --disable-analytics
         '';
       };
   };

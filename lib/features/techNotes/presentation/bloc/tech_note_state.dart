@@ -39,5 +39,5 @@ final class TechNoteUpdateAndDeleteSuccess extends TechNoteState {
 
 final class TechNotesGetAllUsersSuccess extends TechNoteState {
   final List<UserEntities> users;
-  TechNotesGetAllUsersSuccess(this.users);
+  const TechNotesGetAllUsersSuccess(this.users);
 }
