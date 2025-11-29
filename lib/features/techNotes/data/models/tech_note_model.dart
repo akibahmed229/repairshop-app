@@ -11,6 +11,7 @@ class TechNoteModel extends TechNoteEntities {
     required super.updatedAt,
     super.userName,
     super.userEmail,
+    super.isSynced,
   });
 
   factory TechNoteModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +27,9 @@ class TechNoteModel extends TechNoteEntities {
       updatedAt: DateTime.parse(json['updatedAt']),
       userName: json['userName'] ?? "",
       userEmail: json['userEmail'] ?? "",
+      isSynced: json['isSynced'] == true
+          ? json['isSynced'] == 1
+          : json['isSynced'] == 0,
     );
   }
 
@@ -39,6 +43,7 @@ class TechNoteModel extends TechNoteEntities {
     DateTime? updatedAt,
     String? userName,
     String? userEmail,
+    bool? isSynced,
   }) {
     return TechNoteModel(
       id: id ?? this.id,
@@ -50,6 +55,7 @@ class TechNoteModel extends TechNoteEntities {
       updatedAt: updatedAt ?? this.updatedAt,
       userName: userName ?? this.userName,
       userEmail: userEmail ?? this.userEmail,
+      isSynced: isSynced ?? this.isSynced,
     );
   }
 
@@ -64,6 +70,7 @@ class TechNoteModel extends TechNoteEntities {
       'updatedAt': updatedAt.toIso8601String(),
       'userName': userName,
       'userEmail': userEmail,
+      "isSynced": isSynced,
     };
   }
 }

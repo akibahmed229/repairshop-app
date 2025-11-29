@@ -8,6 +8,7 @@ class TechNoteEntities {
   final DateTime updatedAt;
   final String? userName;
   final String? userEmail;
+  final bool? isSynced;
 
   const TechNoteEntities({
     required this.id,
@@ -19,5 +20,6 @@ class TechNoteEntities {
     required this.updatedAt,
     this.userName,
     this.userEmail,
+    this.isSynced,
   });
 }

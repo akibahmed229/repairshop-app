@@ -3,41 +3,42 @@ import 'package:repair_shop/core/secrets/app_secrets.dart';
 class SqfliteSchema {
   static final createUserTable =
       '''
-  CREATE TABLE ${AppSecrets.usersTable}(
-    id TEXT PRIMARY KEY,
-    name TEXT,
-    email TEXT,
-    roles TEXT,
-    active INTEGER,
-    token TEXT
+  CREATE TABLE ${AppSecrets.userTable}(
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    roles TEXT NOT NULL,
+    active INTEGER NOT NULL,
+    token TEXT NOT NULL
   );
 ''';
 
   static final createTechNotesTable =
       '''
   CREATE TABLE ${AppSecrets.techNotesTable}(
-      id TEXT PRIMARY KEY,
-      userId TEXT,
-      title TEXT,
-      content TEXT,
-      completed INTEGER,
-      createdAt TEXT,
-      updatedAt TEXT,
-      userName TEXT,
-      userEmail TEXT
+      id TEXT PRIMARY KEY NOT NULL,
+      userId TEXT NOT NULL,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL,
+      completed INTEGER NOT NULL,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL,
+      userName TEXT NOT NULL,
+      userEmail TEXT NOT NULL,
+      isSynced INTEGER NOT NULL
   );
 ''';
 
   static final createTechNoteUsersTable =
       '''
  CREATE TABLE  ${AppSecrets.techNoteUsersTable}(
-     id TEXT PRIMARY KEY,
-     name TEXT,
-     email TEXT,
-     roles TEXT,
-     active INTEGER,
-     createdAt TEXT,
-     updatedAt TEXT
+     id TEXT PRIMARY KEY NOT NULL,
+     name TEXT NOT NULL,
+     email TEXT NOT NULL,
+     roles TEXT NOT NULL,
+     active INTEGER NOT NULL,
+     createdAt TEXT NOT NULL,
+     updatedAt TEXT NOT NULL
  );
 ''';
 }

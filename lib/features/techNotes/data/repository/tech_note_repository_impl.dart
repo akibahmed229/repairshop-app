@@ -129,14 +129,28 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
       if (await connectionChecker.isConnected) {
         final users = await techNoteRemoteDataSource.getAllTechNoteUsers();
 
+        if (users.isEmpty) {
+          return left(Failure(message: "No note users exist"));
+        }
+
+        await techNoteLocalDataSource.clearTechNoteUsers();
+        await techNoteLocalDataSource.cacheTechNoteUsers(users);
+
         return right(users);
       } else {
-        return left(
-          Failure(
-            message: "Getting all note users failed no internet connection!",
-          ),
-        );
+        final cachedTechnoteUsers = await techNoteLocalDataSource
+            .getCachedTechNoteUsers();
+
+        if (cachedTechnoteUsers == null) {
+          return left(Failure(message: "tech note users not found"));
+        }
+
+        return right(cachedTechnoteUsers);
       }
+    } on ServerExecptions catch (_) {
+      return _getCachedTechNoteUsersData(
+        () => techNoteLocalDataSource.getCachedTechNoteUsers(),
+      );
     } on OtherExecptions catch (e) {
       return left(Failure(message: e.message));
     }
@@ -147,7 +161,17 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
   ) async {
     final cachedUser = await fn();
     if (cachedUser == null) {
-      return left(Failure(message: "User not found"));
+      return left(Failure(message: "Notes not found"));
+    }
+    return right(cachedUser);
+  }
+
+  Future<Either<Failure, List<UserEntities>>> _getCachedTechNoteUsersData(
+    Future<List<UserEntities>?> Function() fn,
+  ) async {
+    final cachedUser = await fn();
+    if (cachedUser == null) {
+      return left(Failure(message: "Users not found"));
     }
     return right(cachedUser);
   }

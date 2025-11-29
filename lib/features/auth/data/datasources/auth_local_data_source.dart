@@ -18,7 +18,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<void> cacheUser(UserModel user) async {
     try {
-      await database.insert(AppSecrets.usersTable, {
+      await database.insert(AppSecrets.userTable, {
         "id": user.id,
         "name": user.email,
         "email": user.email,
@@ -35,7 +35,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<UserModel?> getCachedUser() async {
     try {
       final List<Map<String, dynamic>> map = await database.query(
-        AppSecrets.usersTable,
+        AppSecrets.userTable,
       );
 
       if (map.isEmpty) {
@@ -61,7 +61,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<void> clearUser() async {
     try {
-      await database.delete(AppSecrets.usersTable);
+      await database.delete(AppSecrets.userTable);
     } catch (e) {
       throw ServerExecptions('Failed to clear user data: $e');
     }
