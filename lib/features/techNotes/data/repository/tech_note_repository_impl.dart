@@ -59,9 +59,17 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
         final unSyncedTechNotes = await techNoteLocalDataSource
             .getUnSyncedTechNotes();
 
+        if (unSyncedTechNotes.isEmpty) {
+          return right(true);
+        }
+
         final result = await techNoteRemoteDataSource.syncTechNotes(
           notes: unSyncedTechNotes,
         );
+
+        if (result) {
+          await techNoteLocalDataSource.markAllTechNotesAsSynced();
+        }
 
         return right(result);
       } else {

@@ -21,6 +21,7 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
   @override
   void initState() {
     super.initState();
+    context.read<TechNoteBloc>().add(TechNotesSyncEvent());
     context.read<TechNoteBloc>().add(TechNotesGetEvent());
   }
 
@@ -52,6 +53,12 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
               // 1. Trigger Sync
               bloc.add(TechNotesSyncEvent());
 
+              // 2. get the notes
+              bloc.add(TechNotesGetEvent());
+
+              // Wait for the reload to complete.
+              // You might want to listen to state changes or
+              // delay here for UX smoothness.
               await Future.delayed(
                 const Duration(milliseconds: 500),
               ); // Delay for UX

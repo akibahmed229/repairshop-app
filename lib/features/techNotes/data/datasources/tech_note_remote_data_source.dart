@@ -73,11 +73,6 @@ class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
   @override
   Future<bool> syncTechNotes({required List<TechNoteModel?> notes}) async {
     try {
-      // final taskLists = [];
-      // for (final task in notes) {
-      //   taskLists.add(TechNoteModel.fromJson(task));
-      // }
-
       final response = await http.post(
         Uri.parse('${AppSecrets.backendUri}/api/sync'),
         headers: {'Content-Type': 'application/json'},

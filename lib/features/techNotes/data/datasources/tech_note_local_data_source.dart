@@ -24,6 +24,8 @@ abstract interface class TechNoteLocalDataSource {
 
   Future<List<TechNoteModel>> getUnSyncedTechNotes();
 
+  Future<void> markAllTechNotesAsSynced();
+
   Future<void> cacheTechNotes(List<TechNoteModel> notes);
   Future<void> cacheTechNoteUsers(List<TechNoteUserModel> users);
 
@@ -150,6 +152,24 @@ class TechNoteLocalDataSourceImpl implements TechNoteLocalDataSource {
       return [];
     } catch (e) {
       throw ServerExecptions("Failed to get unsynced note: ${e.toString()}");
+    }
+  }
+
+  @override
+  Future<void> markAllTechNotesAsSynced() async {
+    try {
+      // Perform the update query to set isSynced to 1 where it is currently 0
+      await database.update(
+        AppSecrets.techNotesTable,
+        {
+          "isSynced": 1, // Set to 1 (true)
+        },
+        where: 'isSynced = ?', // Where it is currently 0 (false/un-synced)
+        whereArgs: [0],
+      );
+    } catch (e) {
+      // Handle or log the error
+      throw ServerExecptions('Failed to mark notes as synced: $e');
     }
   }
 
