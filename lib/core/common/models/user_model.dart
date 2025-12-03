@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:repair_shop/core/common/entities/user_entities.dart';
 
-class TechNoteUserModel extends UserEntities {
-  const TechNoteUserModel({
+class UserModel extends UserEntities {
+  const UserModel({
     required super.id,
     required super.name,
     required super.email,
@@ -12,8 +12,8 @@ class TechNoteUserModel extends UserEntities {
     super.updatedAt,
   });
 
-  factory TechNoteUserModel.formJson(Map<String, dynamic> map) {
-    return TechNoteUserModel(
+  factory UserModel.formJson(Map<String, dynamic> map) {
+    return UserModel(
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       email: map['email'] ?? '',

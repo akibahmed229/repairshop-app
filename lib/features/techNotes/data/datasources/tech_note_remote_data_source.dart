@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:repair_shop/core/common/models/user_model.dart';
 import 'package:repair_shop/core/error/other_execptions.dart';
 import 'package:repair_shop/core/error/server_execptions.dart';
 import 'package:repair_shop/core/secrets/app_secrets.dart';
 import 'package:repair_shop/features/techNotes/data/models/tech_note_model.dart';
 import 'package:http/http.dart' as http;
-import 'package:repair_shop/features/techNotes/data/models/tech_note_user_model.dart';
 
 abstract interface class TechNoteRemoteDataSource {
   Future<List<TechNoteModel>> getAllTechNotes();
@@ -30,7 +30,7 @@ abstract interface class TechNoteRemoteDataSource {
 
   Future<String> deleteTechNote({required String id});
 
-  Future<List<TechNoteUserModel>> getAllTechNoteUsers();
+  Future<List<UserModel>> getAllTechNoteUsers();
 }
 
 class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
@@ -167,7 +167,7 @@ class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
   }
 
   @override
-  Future<List<TechNoteUserModel>> getAllTechNoteUsers() async {
+  Future<List<UserModel>> getAllTechNoteUsers() async {
     try {
       final response = await http.get(
         Uri.parse('${AppSecrets.backendUri}/api/users'),
@@ -182,7 +182,7 @@ class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
       final List<dynamic> decodedBody = jsonDecode(response.body);
 
       return decodedBody
-          .map((noteJson) => TechNoteUserModel.formJson(noteJson))
+          .map((noteJson) => UserModel.formJson(noteJson))
           .toList();
     } catch (e) {
       _handleNetworkError(e);

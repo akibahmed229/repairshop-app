@@ -1,7 +1,7 @@
+import 'package:repair_shop/core/common/models/user_model.dart';
 import 'package:repair_shop/core/error/server_execptions.dart';
 import 'package:repair_shop/core/secrets/app_secrets.dart';
 import 'package:repair_shop/features/techNotes/data/models/tech_note_model.dart';
-import 'package:repair_shop/features/techNotes/data/models/tech_note_user_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
@@ -27,10 +27,10 @@ abstract interface class TechNoteLocalDataSource {
   Future<void> markAllTechNotesAsSynced();
 
   Future<void> cacheTechNotes(List<TechNoteModel> notes);
-  Future<void> cacheTechNoteUsers(List<TechNoteUserModel> users);
+  Future<void> cacheTechNoteUsers(List<UserModel> users);
 
   Future<List<TechNoteModel>?> getCachedTechNotes();
-  Future<List<TechNoteUserModel>?> getCachedTechNoteUsers();
+  Future<List<UserModel>?> getCachedTechNoteUsers();
 
   Future<void> clearTechNotes();
   Future<void> clearTechNoteUsers();
@@ -193,7 +193,7 @@ class TechNoteLocalDataSourceImpl implements TechNoteLocalDataSource {
   }
 
   @override
-  Future<void> cacheTechNoteUsers(List<TechNoteUserModel> users) async {
+  Future<void> cacheTechNoteUsers(List<UserModel> users) async {
     try {
       final batch = database.batch();
 
@@ -225,13 +225,13 @@ class TechNoteLocalDataSourceImpl implements TechNoteLocalDataSource {
   }
 
   @override
-  Future<List<TechNoteUserModel>?> getCachedTechNoteUsers() async {
+  Future<List<UserModel>?> getCachedTechNoteUsers() async {
     try {
       final maps = await database.query(AppSecrets.techNoteUsersTable);
 
       if (maps.isEmpty) return null;
 
-      return maps.map((user) => TechNoteUserModel.formJson(user)).toList();
+      return maps.map((user) => UserModel.formJson(user)).toList();
     } catch (e) {
       throw ServerExecptions('Failed to get cached note users: $e');
     }
