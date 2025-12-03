@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:repair_shop/core/common/widgets/loader.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart';
+import 'package:repair_shop/core/utils/show_snackbar.dart';
+import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
 import 'package:repair_shop/features/techNotes/presentation/pages/add_tech_note_page.dart';
 import 'package:repair_shop/features/techNotes/presentation/pages/user_tech_note_page.dart';
 import 'package:repair_shop/features/techNotes/presentation/pages/view_tech_note_page.dart';
@@ -17,6 +21,14 @@ class TechNotePage extends StatefulWidget {
 
 class _TechNotePageState extends State<TechNotePage> {
   int _selectedIndex = 1;
+  // 1. Flag to ensure sync runs only once on initial load
+  bool _isInitialSyncAttempted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<TechNoteBloc>().add(TechNotesGetEvent());
+  }
 
   static const List<Widget> _pages = <Widget>[
     AddTechNotePage(),
@@ -33,7 +45,31 @@ class _TechNotePageState extends State<TechNotePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _pages),
+      body: BlocConsumer<TechNoteBloc, TechNoteState>(
+        builder: (context, state) {
+          if (state is TechNoteLoading) {
+            return const Loader();
+          }
+
+          return IndexedStack(index: _selectedIndex, children: _pages);
+        },
+        listener: (context, state) {
+          // 2. Trigger sync on initial load
+          if (!_isInitialSyncAttempted) {
+            context.read<TechNoteBloc>().add(TechNotesSyncEvent());
+            _isInitialSyncAttempted = true; // Set flag to prevent re-sync
+          }
+
+          if (state is TechNotesSyncSuccess) {
+            // 3. Re-fetch all notes after a successful sync to get the latest data
+            context.read<TechNoteBloc>().add(TechNotesGetEvent());
+          }
+
+          if (state is TechNoteFailure) {
+            showSnackBar(context, state.message);
+          }
+        },
+      ),
 
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(12),
@@ -42,7 +78,7 @@ class _TechNotePageState extends State<TechNotePage> {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.8),
+              color: Colors.black.withValues(alpha: 0.8),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -56,7 +92,9 @@ class _TechNotePageState extends State<TechNotePage> {
             gap: 8,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             curve: Curves.easeInOut,
-            tabBackgroundColor: AppPallete.backgroundColor.withOpacity(0.5),
+            tabBackgroundColor: AppPallete.backgroundColor.withValues(
+              alpha: 0.5,
+            ),
             activeColor: AppPallete.gradient3,
             tabs: const [
               GButton(icon: Icons.note_add_rounded, text: 'Add Notes'),

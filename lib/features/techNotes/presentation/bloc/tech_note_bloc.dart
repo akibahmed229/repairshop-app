@@ -7,6 +7,7 @@ import 'package:repair_shop/features/techNotes/domain/usecases/create_tech_note.
 import 'package:repair_shop/features/techNotes/domain/usecases/delete_tech_note.dart';
 import 'package:repair_shop/features/techNotes/domain/usecases/get_all_tech_note_users.dart';
 import 'package:repair_shop/features/techNotes/domain/usecases/get_all_tech_notes.dart';
+import 'package:repair_shop/features/techNotes/domain/usecases/sync_all_tech_notes.dart';
 import 'package:repair_shop/features/techNotes/domain/usecases/update_tech_note.dart';
 
 part 'tech_note_event.dart';
@@ -14,6 +15,7 @@ part 'tech_note_state.dart';
 
 class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
   final GetAllTechNotes _getAllTechNotes;
+  final SyncAllTechNotes _syncAllTechNotes;
   final CreateTechNote _createTechNote;
   final UpdateTechNote _updateTechNote;
   final DeleteTechNote _deleteTechNote;
@@ -21,11 +23,13 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
 
   TechNoteBloc({
     required GetAllTechNotes getAllTechNotes,
+    required SyncAllTechNotes syncAllTechNotes,
     required CreateTechNote createTechNote,
     required UpdateTechNote updateTechNote,
     required DeleteTechNote deleteTechNote,
     required GetAllTechNoteUsers getAllTechNoteUsers,
   }) : _getAllTechNotes = getAllTechNotes,
+       _syncAllTechNotes = syncAllTechNotes,
        _createTechNote = createTechNote,
        _updateTechNote = updateTechNote,
        _deleteTechNote = deleteTechNote,
@@ -33,6 +37,7 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
        super(TechNoteInitial()) {
     on<TechNoteEvent>((event, emit) => emit(TechNoteLoading()));
     on<TechNotesGetEvent>(_onTechNotesGetEvent);
+    on<TechNotesSyncEvent>(_onTechNotesSyncEvent);
     on<TechNoteCreateEvent>(_onTechNoteCreateEvent);
     on<TechNoteUpdateEvent>(_onTechNoteUpdateEvent);
     on<TechNoteDeleteEvent>(_onTechNoteDeleteEvent);
@@ -48,6 +53,18 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
     res.fold(
       (failure) => emit(TechNoteFailure(message: failure.message)),
       ((notes) => emit(TechNotesGetSuccess(notes))),
+    );
+  }
+
+  void _onTechNotesSyncEvent(
+    TechNotesSyncEvent event,
+    Emitter<TechNoteState> emit,
+  ) async {
+    final res = await _syncAllTechNotes(NoParams());
+
+    res.fold(
+      (failure) => emit(TechNoteFailure(message: failure.message)),
+      ((isSynced) => emit(TechNotesSyncSuccess(isSynced))),
     );
   }
 

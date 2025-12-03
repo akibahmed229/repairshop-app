@@ -25,6 +25,12 @@ final class TechNotesGetSuccess extends TechNoteState {
   const TechNotesGetSuccess(this.notes);
 }
 
+final class TechNotesSyncSuccess extends TechNoteState {
+  final bool isSynced;
+
+  const TechNotesSyncSuccess(this.isSynced);
+}
+
 final class TechNoteCreateSuccess extends TechNoteState {
   final TechNoteEntities note;
 

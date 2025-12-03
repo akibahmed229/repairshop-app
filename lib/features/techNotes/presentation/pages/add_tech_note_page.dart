@@ -61,8 +61,8 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
           IconButton(
             onPressed: _createNewNote,
             icon: CircleAvatar(
+              backgroundColor: AppPallete.borderColor.withValues(alpha: 0.5),
               child: const Icon(Icons.done_rounded),
-              backgroundColor: AppPallete.borderColor.withOpacity(0.5),
             ),
           ),
         ],

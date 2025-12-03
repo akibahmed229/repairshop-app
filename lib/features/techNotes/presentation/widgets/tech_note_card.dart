@@ -19,7 +19,7 @@ class TechNoteCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '${note.title}',
+              note.title,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             IconButton(
@@ -27,8 +27,8 @@ class TechNoteCard extends StatelessWidget {
                 Navigator.push(context, EditTechNotePage.route(note));
               },
               icon: CircleAvatar(
+                backgroundColor: AppPallete.borderColor.withValues(alpha: 0.5),
                 child: const Icon(Icons.edit_rounded),
-                backgroundColor: AppPallete.borderColor.withOpacity(0.5),
               ),
             ),
           ],

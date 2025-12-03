@@ -9,7 +9,7 @@ class TechNoteEditor extends StatelessWidget {
     super.key,
     required this.controller,
     required this.hintText,
-    this.maxLines = null,
+    this.maxLines,
     this.minLines = 2,
   });
 

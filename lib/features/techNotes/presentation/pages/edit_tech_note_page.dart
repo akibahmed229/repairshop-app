@@ -76,21 +76,21 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
           IconButton(
             onPressed: _deleteNote,
             icon: CircleAvatar(
+              backgroundColor: AppPallete.borderColor.withValues(alpha: 0.5),
               child: const Icon(
                 Icons.close_rounded,
                 color: AppPallete.errorColor,
               ),
-              backgroundColor: AppPallete.borderColor.withOpacity(0.5),
             ),
           ),
           IconButton(
             onPressed: _updateNote,
             icon: CircleAvatar(
+              backgroundColor: AppPallete.borderColor.withValues(alpha: 0.5),
               child: const Icon(
                 Icons.done_rounded,
                 color: AppPallete.successColor,
               ),
-              backgroundColor: AppPallete.borderColor.withOpacity(0.5),
             ),
           ),
         ],
@@ -216,7 +216,7 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
                         children: [
                           const Icon(Icons.event_note),
                           SizedBox(width: 6),
-                          Text("${formatDateByMMMYYYY(widget.note.createdAt)}"),
+                          Text(formatDateByMMMYYYY(widget.note.createdAt)),
                         ],
                       ),
 
@@ -224,7 +224,7 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
                         children: [
                           const Icon(Icons.history_toggle_off),
                           SizedBox(width: 6),
-                          Text("${formatDateByMMMYYYY(widget.note.updatedAt)}"),
+                          Text(formatDateByMMMYYYY(widget.note.updatedAt)),
                         ],
                       ),
                     ],

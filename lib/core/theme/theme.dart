@@ -15,7 +15,7 @@ class AppTheme {
     appBarTheme: AppBarTheme(backgroundColor: AppPallete.backgroundColor),
 
     chipTheme: ChipThemeData(
-      color: MaterialStatePropertyAll(AppPallete.backgroundColor),
+      color: WidgetStatePropertyAll(AppPallete.backgroundColor),
       side: BorderSide.none,
     ),
 
@@ -29,8 +29,8 @@ class AppTheme {
 
     dropdownMenuTheme: DropdownMenuThemeData(
       menuStyle: MenuStyle(
-        backgroundColor: MaterialStatePropertyAll(AppPallete.backgroundColor),
-        surfaceTintColor: MaterialStatePropertyAll(AppPallete.backgroundColor),
+        backgroundColor: WidgetStatePropertyAll(AppPallete.backgroundColor),
+        surfaceTintColor: WidgetStatePropertyAll(AppPallete.backgroundColor),
       ),
     ),
   );

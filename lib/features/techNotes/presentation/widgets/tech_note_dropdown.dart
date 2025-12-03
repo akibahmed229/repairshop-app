@@ -7,6 +7,7 @@ class TechNoteDropdown extends StatelessWidget {
   final ValueChanged<String?>? onChanged;
 
   const TechNoteDropdown({
+    super.key,
     required this.assignedTo,
     required this.users,
     this.onChanged,
@@ -23,7 +24,7 @@ class TechNoteDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: assignedTo,
+      initialValue: assignedTo,
       decoration: _dropdownDecoration(),
       dropdownColor: AppPallete.borderColor,
       items: users.map((user) {

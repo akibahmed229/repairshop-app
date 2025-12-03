@@ -6,6 +6,8 @@ import 'package:repair_shop/features/techNotes/domain/entities/tech_note_entitie
 abstract interface class TechNoteRepository {
   Future<Either<Failure, List<TechNoteEntities>>> getAllTechNotes();
 
+  Future<Either<Failure, bool>> syncAllTechNotes();
+
   Future<Either<Failure, TechNoteEntities>> createTechNote({
     required String userId,
     required String title,

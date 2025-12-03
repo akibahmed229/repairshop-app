@@ -23,8 +23,8 @@ class SqfliteSchema {
       completed INTEGER NOT NULL,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
-      userName TEXT NOT NULL,
-      userEmail TEXT NOT NULL,
+      userName TEXT,
+      userEmail TEXT,
       isSynced INTEGER NOT NULL
   );
 ''';

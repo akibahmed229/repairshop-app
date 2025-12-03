@@ -12,6 +12,8 @@ import 'package:repair_shop/features/techNotes/data/models/tech_note_user_model.
 abstract interface class TechNoteRemoteDataSource {
   Future<List<TechNoteModel>> getAllTechNotes();
 
+  Future<bool> syncTechNotes({required List<TechNoteModel?> notes});
+
   Future<TechNoteModel> createTechNote({
     required String userId,
     required String title,
@@ -63,6 +65,30 @@ class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
       return decodedBody
           .map((noteJson) => TechNoteModel.fromJson(noteJson))
           .toList();
+    } catch (e) {
+      _handleNetworkError(e);
+    }
+  }
+
+  @override
+  Future<bool> syncTechNotes({required List<TechNoteModel?> notes}) async {
+    try {
+      // final taskLists = [];
+      // for (final task in notes) {
+      //   taskLists.add(TechNoteModel.fromJson(task));
+      // }
+
+      final response = await http.post(
+        Uri.parse('${AppSecrets.backendUri}/api/sync'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(notes),
+      );
+
+      if (response.statusCode != 201) {
+        throw jsonDecode(response.body)['message'];
+      }
+
+      return true;
     } catch (e) {
       _handleNetworkError(e);
     }
@@ -122,7 +148,7 @@ class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
 
       return jsonDecode(response.body);
     } catch (e) {
-      throw OtherExecptions("Failed to create note: ${e.toString()}");
+      throw OtherExecptions("Failed to update note: ${e.toString()}");
     }
   }
 
@@ -141,7 +167,7 @@ class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
 
       return jsonDecode(response.body);
     } catch (e) {
-      throw OtherExecptions("Failed to create note: ${e.toString()}");
+      throw OtherExecptions("Failed to delete note: ${e.toString()}");
     }
   }
 

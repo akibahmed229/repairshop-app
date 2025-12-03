@@ -53,6 +53,28 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
   }
 
   @override
+  Future<Either<Failure, bool>> syncAllTechNotes() async {
+    try {
+      if (await connectionChecker.isConnected) {
+        final unSyncedTechNotes = await techNoteLocalDataSource
+            .getUnSyncedTechNotes();
+
+        final result = await techNoteRemoteDataSource.syncTechNotes(
+          notes: unSyncedTechNotes,
+        );
+
+        return right(result);
+      } else {
+        return left(Failure(message: "No Internet Connection!!!"));
+      }
+    } on ServerExecptions catch (e) {
+      return left(Failure(message: e.message));
+    } on OtherExecptions catch (e) {
+      return left(Failure(message: e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, TechNoteEntities>> createTechNote({
     required String userId,
     required String title,
@@ -68,10 +90,16 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
 
         return right(note);
       } else {
-        return left(
-          Failure(message: "Creating note failed no internet connection!"),
+        final note = await techNoteLocalDataSource.createTechNote(
+          userId: userId,
+          title: title,
+          content: content,
         );
+
+        return right(note);
       }
+    } on ServerExecptions catch (e) {
+      return left(Failure(message: e.message));
     } on OtherExecptions catch (e) {
       return left(Failure(message: e.message));
     }
@@ -97,10 +125,18 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
 
         return right(note);
       } else {
-        return left(
-          Failure(message: "Updating note failed no internet connection!"),
+        final note = await techNoteLocalDataSource.updateTechNote(
+          id: id,
+          userId: userId,
+          title: title,
+          content: content,
+          completed: completed,
         );
+
+        return right(note);
       }
+    } on ServerExecptions catch (e) {
+      return left(Failure(message: e.message));
     } on OtherExecptions catch (e) {
       return left(Failure(message: e.message));
     }
@@ -114,10 +150,12 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
 
         return right(note);
       } else {
-        return left(
-          Failure(message: "Deleting note failed no internet connection!"),
-        );
+        final note = await techNoteLocalDataSource.deleteTechNote(id: id);
+
+        return right(note);
       }
+    } on ServerExecptions catch (e) {
+      return left(Failure(message: e.message));
     } on OtherExecptions catch (e) {
       return left(Failure(message: e.message));
     }

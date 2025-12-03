@@ -9,6 +9,10 @@ final class TechNotesGetEvent extends TechNoteEvent {
   const TechNotesGetEvent();
 }
 
+final class TechNotesSyncEvent extends TechNoteEvent {
+  const TechNotesSyncEvent();
+}
+
 final class TechNoteCreateEvent extends TechNoteEvent {
   final String userId;
   final String title;

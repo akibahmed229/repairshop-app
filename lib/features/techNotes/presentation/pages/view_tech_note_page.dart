@@ -47,13 +47,16 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
           // Default widget when no condition matches
           return RefreshIndicator(
             onRefresh: () async {
-              context.read<TechNoteBloc>().add(TechNotesGetEvent());
+              final bloc = context.read<TechNoteBloc>();
 
-              // Wait for the reload to complete.
-              // You might want to listen to state changes or
-              // delay here for UX smoothness.
-              await Future.delayed(const Duration(milliseconds: 500));
+              // 1. Trigger Sync
+              bloc.add(TechNotesSyncEvent());
+
+              await Future.delayed(
+                const Duration(milliseconds: 500),
+              ); // Delay for UX
             },
+
             child: Scrollbar(
               child: ListView.builder(
                 itemCount: notes.length,

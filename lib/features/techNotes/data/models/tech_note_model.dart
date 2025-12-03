@@ -27,9 +27,7 @@ class TechNoteModel extends TechNoteEntities {
       updatedAt: DateTime.parse(json['updatedAt']),
       userName: json['userName'] ?? "",
       userEmail: json['userEmail'] ?? "",
-      isSynced: json['isSynced'] == true
-          ? json['isSynced'] == 1
-          : json['isSynced'] == 0,
+      isSynced: json['isSynced'] == 1 || json['isSynced'] == true,
     );
   }
 
@@ -70,7 +68,7 @@ class TechNoteModel extends TechNoteEntities {
       'updatedAt': updatedAt.toIso8601String(),
       'userName': userName,
       'userEmail': userEmail,
-      "isSynced": isSynced,
+      "isSynced": (isSynced ?? false) ? 1 : 0,
     };
   }
 }

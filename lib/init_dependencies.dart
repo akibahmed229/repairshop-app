@@ -22,6 +22,7 @@ import 'package:repair_shop/features/techNotes/domain/usecases/create_tech_note.
 import 'package:repair_shop/features/techNotes/domain/usecases/delete_tech_note.dart';
 import 'package:repair_shop/features/techNotes/domain/usecases/get_all_tech_note_users.dart';
 import 'package:repair_shop/features/techNotes/domain/usecases/get_all_tech_notes.dart';
+import 'package:repair_shop/features/techNotes/domain/usecases/sync_all_tech_notes.dart';
 import 'package:repair_shop/features/techNotes/domain/usecases/update_tech_note.dart';
 import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
 import 'package:sqflite/sqflite.dart';
@@ -104,6 +105,9 @@ void _initTechNote() {
       () => GetAllTechNotes(techNoteRepository: serviceLocator()),
     )
     ..registerFactory(
+      () => SyncAllTechNotes(techNoteRepository: serviceLocator()),
+    )
+    ..registerFactory(
       () => CreateTechNote(techNoteRepository: serviceLocator()),
     )
     ..registerFactory(
@@ -118,6 +122,7 @@ void _initTechNote() {
     ..registerLazySingleton(
       () => TechNoteBloc(
         getAllTechNotes: serviceLocator(),
+        syncAllTechNotes: serviceLocator(),
         createTechNote: serviceLocator(),
         updateTechNote: serviceLocator(),
         deleteTechNote: serviceLocator(),

@@ -3,12 +3,33 @@ import 'package:repair_shop/core/secrets/app_secrets.dart';
 import 'package:repair_shop/features/techNotes/data/models/tech_note_model.dart';
 import 'package:repair_shop/features/techNotes/data/models/tech_note_user_model.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:uuid/uuid.dart';
 
 abstract interface class TechNoteLocalDataSource {
+  Future<TechNoteModel> createTechNote({
+    required String userId,
+    required String title,
+    required String content,
+  });
+
+  Future<String> updateTechNote({
+    required String id,
+    required String userId,
+    required String title,
+    required String content,
+    required bool completed,
+  });
+
+  Future<String> deleteTechNote({required String id});
+
+  Future<List<TechNoteModel>> getUnSyncedTechNotes();
+
   Future<void> cacheTechNotes(List<TechNoteModel> notes);
   Future<void> cacheTechNoteUsers(List<TechNoteUserModel> users);
+
   Future<List<TechNoteModel>?> getCachedTechNotes();
   Future<List<TechNoteUserModel>?> getCachedTechNoteUsers();
+
   Future<void> clearTechNotes();
   Future<void> clearTechNoteUsers();
 }
@@ -16,6 +37,121 @@ abstract interface class TechNoteLocalDataSource {
 class TechNoteLocalDataSourceImpl implements TechNoteLocalDataSource {
   final Database database;
   const TechNoteLocalDataSourceImpl({required this.database});
+
+  @override
+  Future<TechNoteModel> createTechNote({
+    required String userId,
+    required String title,
+    required String content,
+  }) async {
+    try {
+      final String noteId = Uuid().v7();
+
+      await database.insert(AppSecrets.techNotesTable, {
+        "id": noteId,
+        "userId": userId,
+        "title": title,
+        "content": content,
+        "completed": 0,
+        "createdAt": DateTime.now().toIso8601String(),
+        "updatedAt": DateTime.now().toIso8601String(),
+        "isSynced": 0,
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
+
+      final List<Map<String, dynamic>> notes = await database.query(
+        AppSecrets.techNotesTable,
+        where: "id = ?",
+        whereArgs: [noteId],
+      );
+
+      if (notes.isNotEmpty) {
+        return TechNoteModel.fromJson(notes.first);
+      } else {
+        throw ServerExecptions(
+          "Failed to create note: Query after insert failed",
+        );
+      }
+    } catch (e) {
+      throw ServerExecptions("Failed to create note: ${e.toString()}");
+    }
+  }
+
+  @override
+  Future<String> updateTechNote({
+    required String id,
+    required String userId,
+    required String title,
+    required String content,
+    required bool completed,
+  }) async {
+    try {
+      final List<Map<String, dynamic>> isNoteExists = await database.query(
+        AppSecrets.techNotesTable,
+        where: "id = ?",
+        whereArgs: [id],
+      );
+
+      if (isNoteExists.isEmpty) {
+        throw ServerExecptions("Failed to update note, something went wrong!!");
+      }
+
+      await database.update(
+        AppSecrets.techNotesTable,
+        {
+          "userId": userId,
+          "title": title,
+          "content": content,
+          "completed": completed ? 1 : 0,
+          "updatedAt": DateTime.now().toIso8601String(),
+          "isSynced": 0,
+        },
+        where: "id = ?",
+        whereArgs: [id],
+      );
+
+      return "$title updated";
+    } catch (e) {
+      throw ServerExecptions("Failed to update note: ${e.toString()}");
+    }
+  }
+
+  @override
+  Future<String> deleteTechNote({required String id}) async {
+    try {
+      await database.delete(
+        AppSecrets.techNotesTable,
+        where: "id = ?",
+        whereArgs: [id],
+      );
+
+      return "Note with ID $id deleted";
+    } catch (e) {
+      throw ServerExecptions("Failed to delete note: ${e.toString()}");
+    }
+  }
+
+  @override
+  Future<List<TechNoteModel>> getUnSyncedTechNotes() async {
+    try {
+      final result = await database.query(
+        AppSecrets.techNotesTable,
+        where: 'isSynced = ?',
+        whereArgs: [0],
+      );
+
+      if (result.isNotEmpty) {
+        List<TechNoteModel> tasks = [];
+        for (final note in result) {
+          tasks.add(TechNoteModel.fromJson(note));
+        }
+        return tasks;
+      }
+
+      return [];
+    } catch (e) {
+      throw ServerExecptions("Failed to get unsynced note: ${e.toString()}");
+    }
+  }
 
   @override
   Future<void> cacheTechNotes(List<TechNoteModel> notes) async {
