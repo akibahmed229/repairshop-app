@@ -7,6 +7,7 @@ import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:repair_shop/features/auth/presentation/pages/login_page.dart';
 import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
 import 'package:repair_shop/features/techNotes/presentation/pages/tech_note_page.dart';
+import 'package:repair_shop/features/users/presentation/bloc/user_bloc.dart';
 import 'package:repair_shop/init_dependencies.dart';
 
 void main() async {
@@ -20,6 +21,7 @@ void main() async {
         BlocProvider(create: (_) => serviceLocator<AuthBloc>()),
         BlocProvider(create: (_) => serviceLocator<AppWideUserCubit>()),
         BlocProvider(create: (_) => serviceLocator<TechNoteBloc>()),
+        BlocProvider(create: (_) => serviceLocator<UserBloc>()),
       ],
       child: const RepairShop(),
     ),

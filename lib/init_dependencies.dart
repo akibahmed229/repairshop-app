@@ -25,6 +25,11 @@ import 'package:repair_shop/features/techNotes/domain/usecases/get_all_tech_note
 import 'package:repair_shop/features/techNotes/domain/usecases/sync_all_tech_notes.dart';
 import 'package:repair_shop/features/techNotes/domain/usecases/update_tech_note.dart';
 import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
+import 'package:repair_shop/features/users/data/datasources/user_local_data_source.dart';
+import 'package:repair_shop/features/users/data/datasources/user_remote_data_source.dart';
+import 'package:repair_shop/features/users/data/repository/user_repository_impl.dart';
+import 'package:repair_shop/features/users/domain/repository/user_repository.dart';
+import 'package:repair_shop/features/users/presentation/bloc/user_bloc.dart';
 import 'package:sqflite/sqflite.dart';
 
 final serviceLocator = GetIt.instance;
@@ -57,6 +62,7 @@ Future<void> initDependencies() async {
 
   _initAuth();
   _initTechNote();
+  _initUsers();
 }
 
 void _initAuth() {
@@ -128,5 +134,24 @@ void _initTechNote() {
         deleteTechNote: serviceLocator(),
         getAllTechNoteUsers: serviceLocator(),
       ),
+    );
+}
+
+void _initUsers(){
+  serviceLocator
+    ..registerFactory<UserRemoteDataSource>(() => UserRemoteDataSourceImpl())
+    ..registerFactory<UserLocalDataSource>(
+      () => UserLocalDataSourceImp(database: serviceLocator()),
+    )
+    ..registerFactory<UserRepository>(
+      () => UserRepositoryImpl(
+        userRemoteDataSource: serviceLocator(),
+        userLocalDataSource: serviceLocator(),
+        connectionChecker: serviceLocator(),
+      ),
+    )
+    // ..registerFactory(() => UserSignUp(authRepository: serviceLocator()))
+    ..registerLazySingleton(
+      () => UserBloc(),
     );
 }

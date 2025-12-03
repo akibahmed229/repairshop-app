@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/features/techNotes/presentation/pages/add_tech_note_page.dart';
-import 'package:repair_shop/features/techNotes/presentation/pages/user_tech_note_page.dart';
 import 'package:repair_shop/features/techNotes/presentation/pages/view_tech_note_page.dart';
+import 'package:repair_shop/features/users/presentation/pages/user_page.dart';
 
 class TechNotePage extends StatefulWidget {
   static route() =>
@@ -21,7 +21,7 @@ class _TechNotePageState extends State<TechNotePage> {
   static const List<Widget> _pages = <Widget>[
     AddTechNotePage(),
     ViewTechNotePage(),
-    UserTechNotePage(),
+    UserPage(),
   ];
 
   void _onTabChange(int index) {
@@ -73,3 +73,4 @@ class _TechNotePageState extends State<TechNotePage> {
     );
   }
 }
+
