@@ -29,6 +29,10 @@ import 'package:repair_shop/features/users/data/datasources/user_local_data_sour
 import 'package:repair_shop/features/users/data/datasources/user_remote_data_source.dart';
 import 'package:repair_shop/features/users/data/repository/user_repository_impl.dart';
 import 'package:repair_shop/features/users/domain/repository/user_repository.dart';
+import 'package:repair_shop/features/users/domain/usecases/create_new_user.dart';
+import 'package:repair_shop/features/users/domain/usecases/delete_user.dart';
+import 'package:repair_shop/features/users/domain/usecases/get_all_users.dart';
+import 'package:repair_shop/features/users/domain/usecases/update_user.dart';
 import 'package:repair_shop/features/users/presentation/bloc/user_bloc.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -137,7 +141,7 @@ void _initTechNote() {
     );
 }
 
-void _initUsers(){
+void _initUsers() {
   serviceLocator
     ..registerFactory<UserRemoteDataSource>(() => UserRemoteDataSourceImpl())
     ..registerFactory<UserLocalDataSource>(
@@ -150,8 +154,16 @@ void _initUsers(){
         connectionChecker: serviceLocator(),
       ),
     )
-    // ..registerFactory(() => UserSignUp(authRepository: serviceLocator()))
+    ..registerFactory(() => GetAllUsers(userRepository: serviceLocator()))
+    ..registerFactory(() => CreateNewUser(userRepository: serviceLocator()))
+    ..registerFactory(() => UpdateUser(userRepository: serviceLocator()))
+    ..registerFactory(() => DeleteUser(userRepository: serviceLocator()))
     ..registerLazySingleton(
-      () => UserBloc(),
+      () => UserBloc(
+        getAllUsers: serviceLocator(),
+        createNewUser: serviceLocator(),
+        updateUser: serviceLocator(),
+        deleteUser: serviceLocator(),
+      ),
     );
 }
