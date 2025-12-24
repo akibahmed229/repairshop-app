@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:repair_shop/core/common/widgets/auth_field.dart';
+import 'package:repair_shop/core/common/widgets/auth_gradient_button.dart';
 import 'package:repair_shop/core/common/widgets/loader.dart';
+import 'package:repair_shop/core/common/widgets/my_drop_down_menu.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart'; // Assuming AppPallete
 import 'package:repair_shop/core/utils/show_snackbar.dart';
 import 'package:repair_shop/features/users/presentation/bloc/user_bloc.dart';
-import 'package:repair_shop/features/users/presentation/widgets/auth_field.dart'; // Assuming AuthField
 
 class NewUserPage extends StatefulWidget {
   // Use a route static method for navigation
@@ -63,7 +65,7 @@ class _NewUserPageState extends State<NewUserPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New User'), centerTitle: true),
+      appBar: AppBar(),
       body: BlocConsumer<UserBloc, UserState>(
         listener: (context, state) {
           if (state is UserStateFailure) {
@@ -160,60 +162,30 @@ class _NewUserPageState extends State<NewUserPage> {
                         border: Border.all(color: AppPallete.borderColor),
                       ),
 
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: selectedRole,
-                          isExpanded: true,
-                          dropdownColor: AppPallete.backgroundColor,
-                          style: const TextStyle(
-                            color: AppPallete.whiteColor,
-                            fontSize: 16,
-                          ),
-                          icon: const Icon(
-                            Icons.arrow_drop_down,
-                            color: AppPallete.whiteColor,
-                          ),
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              selectedRole = newValue;
-                            });
-                          },
-                          items: userRoles.map<DropdownMenuItem<String>>((
-                            String role,
-                          ) {
-                            return DropdownMenuItem<String>(
-                              value: role,
-                              child: Text(role),
-                            );
-                          }).toList(),
-                        ),
+                      child: MyDropDownMenu(
+                        value: selectedRole!,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedRole = newValue;
+                          });
+                        },
+                        items: userRoles.map<DropdownMenuItem<String>>((
+                          String role,
+                        ) {
+                          return DropdownMenuItem<String>(
+                            value: role,
+                            child: Text(role),
+                          );
+                        }).toList(),
                       ),
                     ),
                     const SizedBox(height: 35),
 
                     // Sign Up Button (Assumed to be AuthGradientButton)
                     // Note: AuthGradientButton is not defined here, using standard ElevatedButton
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _createUser,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          backgroundColor: AppPallete
-                              .gradient1, // Use a gradient color if possible
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Text(
-                          'CREATE USER',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppPallete.whiteColor,
-                          ),
-                        ),
-                      ),
+                    AuthGradientButton(
+                      buttonText: 'CREATE USER',
+                      onPressed: _createUser,
                     ),
                   ],
                 ),

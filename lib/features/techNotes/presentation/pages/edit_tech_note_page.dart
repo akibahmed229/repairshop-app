@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:repair_shop/core/common/entities/user_entities.dart';
 import 'package:repair_shop/core/common/widgets/loader.dart';
+import 'package:repair_shop/core/common/widgets/my_drop_down_menu.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/core/utils/format_date.dart';
 import 'package:repair_shop/core/utils/show_snackbar.dart';
 import 'package:repair_shop/features/techNotes/domain/entities/tech_note_entities.dart';
 import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
 import 'package:repair_shop/features/techNotes/presentation/pages/tech_note_page.dart';
-import 'package:repair_shop/features/techNotes/presentation/widgets/tech_note_dropdown.dart';
 import 'package:repair_shop/features/techNotes/presentation/widgets/tech_note_editor.dart';
 
 class EditTechNotePage extends StatefulWidget {
@@ -197,15 +197,18 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
                     style: TextStyle(color: Colors.white),
                   ),
                   const SizedBox(height: 5),
-                  TechNoteDropdown(
-                    assignedTo: _assignedTo,
-                    users: _users,
+                  MyDropDownMenu(
+                    value: _assignedTo,
                     onChanged: (value) {
                       setState(() {
                         _assignedTo = value ?? _assignedTo;
                       });
                     },
+                    items: _users.map((user) {
+                      return DropdownMenuItem(value: user, child: Text(user));
+                    }).toList(),
                   ),
+
                   const SizedBox(height: 20),
 
                   // Created & Updated in a row

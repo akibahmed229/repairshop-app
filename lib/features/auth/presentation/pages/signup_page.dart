@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:repair_shop/core/common/widgets/auth_field.dart';
+import 'package:repair_shop/core/common/widgets/auth_gradient_button.dart';
 import 'package:repair_shop/core/common/widgets/loader.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/core/utils/show_snackbar.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:repair_shop/features/auth/presentation/pages/login_page.dart';
-import 'package:repair_shop/features/auth/presentation/widgets/auth_field.dart';
-import 'package:repair_shop/features/auth/presentation/widgets/auth_gradient_button.dart';
 
 class SignupPage extends StatefulWidget {
   // Static method to create a route for the SignupPage
