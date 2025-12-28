@@ -4,6 +4,7 @@ import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/core/common/widgets/loader.dart';
 import 'package:repair_shop/core/utils/show_snackbar.dart';
 import 'package:repair_shop/features/users/presentation/bloc/user_bloc.dart';
+import 'package:repair_shop/features/users/presentation/pages/edit_user_page.dart';
 import 'package:repair_shop/features/users/presentation/widgets/table_row_helper.dart';
 
 class ViewUserSettingPage extends StatefulWidget {
@@ -47,12 +48,6 @@ class _ViewUserSettingPageState extends State<ViewUserSettingPage> {
           // Listen for errors or success messages
           if (state is UserStateFailure) {
             showSnackBar(context, state.message);
-          }
-          // Optional: Listen for Delete/Update success and refresh the list
-          if (state is DeleteUserSuccessState ||
-              state is UpdateUserSuccessState) {
-            showSnackBar(context, "Operation successful, refreshing list...");
-            context.read<UserBloc>().add(const GetAllUsersEvent());
           }
         },
         builder: (context, state) {
@@ -104,7 +99,7 @@ class _ViewUserSettingPageState extends State<ViewUserSettingPage> {
                       editIcon: 'Icon',
                       onEditTap: () {
                         // TODO: Implement navigation to an 'Edit User' page
-                        // Example: Navigator.of(context).push(EditUserPage.route(user));
+                        Navigator.of(context).push(EditUserPage.route(user));
                       },
                     ),
                   ),

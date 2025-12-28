@@ -109,6 +109,7 @@ void _initTechNote() {
         techNoteRemoteDataSource: serviceLocator(),
         techNoteLocalDataSource: serviceLocator(),
         connectionChecker: serviceLocator(),
+        spService: serviceLocator(),
       ),
     )
     ..registerFactory(
@@ -152,6 +153,7 @@ void _initUsers() {
         userRemoteDataSource: serviceLocator(),
         userLocalDataSource: serviceLocator(),
         connectionChecker: serviceLocator(),
+        spService: serviceLocator(),
       ),
     )
     ..registerFactory(() => GetAllUsers(userRepository: serviceLocator()))

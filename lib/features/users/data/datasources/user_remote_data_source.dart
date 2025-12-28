@@ -9,13 +9,14 @@ import 'package:repair_shop/core/error/server_execptions.dart';
 import 'package:repair_shop/core/secrets/app_secrets.dart';
 
 abstract interface class UserRemoteDataSource {
-  Future<List<UserModel>> getAllUsers();
+  Future<List<UserModel>> getAllUsers({required String? token});
 
   Future<UserModel> createNewUser({
     required String name,
     required String email,
     required String password,
     required List<String> roles,
+    required String? token,
   });
 
   Future<UserModel> updateUser({
@@ -24,9 +25,10 @@ abstract interface class UserRemoteDataSource {
     required String email,
     required String password,
     required List<String> roles,
+    required String? token,
   });
 
-  Future<String> deleteUser({required String id});
+  Future<String> deleteUser({required String id, required String? token});
 }
 
 class UserRemoteDataSourceImpl implements UserRemoteDataSource {
@@ -44,11 +46,11 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   }
 
   @override
-  Future<List<UserModel>> getAllUsers() async {
+  Future<List<UserModel>> getAllUsers({required String? token}) async {
     try {
       final response = await http.get(
         Uri.parse('${AppSecrets.backendUri}/api/users'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'x-auth-token': token!},
       );
 
       if (response.statusCode != 200) {
@@ -70,11 +72,12 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     required String email,
     required String password,
     required List<String> roles,
+    required String? token,
   }) async {
     try {
       final response = await http.post(
         Uri.parse('${AppSecrets.backendUri}/api/users'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'x-auth-token': token!},
         body: jsonEncode({
           "name": name,
           "email": email,
@@ -100,11 +103,12 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
     required String email,
     required String password,
     required List<String> roles,
+    required String? token,
   }) async {
     try {
       final response = await http.put(
         Uri.parse('${AppSecrets.backendUri}/api/users'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'x-auth-token': token!},
         body: jsonEncode({
           "id": id,
           "name": name,
@@ -125,11 +129,14 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   }
 
   @override
-  Future<String> deleteUser({required String id}) async {
+  Future<String> deleteUser({
+    required String id,
+    required String? token,
+  }) async {
     try {
       final response = await http.delete(
-        Uri.parse('${AppSecrets.backendUri}/api/techNotes'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse('${AppSecrets.backendUri}/api/users'),
+        headers: {'Content-Type': 'application/json', 'x-auth-token': token!},
         body: jsonEncode({"id": id}),
       );
 
