@@ -11,18 +11,27 @@ class TechNoteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       elevation: 3,
       child: ListTile(
-        contentPadding: EdgeInsets.all(12),
+        contentPadding: const EdgeInsets.all(12),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              note.title,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            Expanded(
+              child: Text(
+                note.title,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                maxLines: 1, // Keeps the card height consistent
+                overflow:
+                    TextOverflow.ellipsis, // Adds "..." if text is too long
+              ),
             ),
             IconButton(
+              // Added padding to separate button from text slightly
+              padding: const EdgeInsets.only(left: 8),
+              constraints:
+                  const BoxConstraints(), // Removes default minimum size constraints
               onPressed: () {
                 Navigator.push(context, EditTechNotePage.route(note));
               },
@@ -36,10 +45,14 @@ class TechNoteCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(
+              height: 8,
+            ), // Added slight spacing between title and subtitle
             Row(
               children: [
                 Icon(
                   note.completed ? Icons.done_rounded : Icons.pending_actions,
+                  size: 20, // Adjusted size to fit better
                 ),
                 const SizedBox(width: 6),
                 const Text(
@@ -55,23 +68,25 @@ class TechNoteCard extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(Icons.person),
+                const Icon(Icons.person, size: 20),
                 const SizedBox(width: 6),
                 const Text(
                   "Owner: ",
                   style: TextStyle(fontWeight: FontWeight.w500),
                 ),
-                Text(
-                  "${note.userName}",
-                  style: TextStyle(color: Colors.greenAccent),
+                Expanded(
+                  // Added Expanded here too just in case username is huge
+                  child: Text(
+                    "${note.userEmail}",
+                    style: const TextStyle(color: Colors.greenAccent),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
-
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

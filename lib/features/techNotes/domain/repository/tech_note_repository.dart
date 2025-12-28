@@ -12,6 +12,8 @@ abstract interface class TechNoteRepository {
     required String userId,
     required String title,
     required String content,
+    String? userName,
+    String? userEmail,
   });
 
   Future<Either<Failure, String>> updateTechNote({

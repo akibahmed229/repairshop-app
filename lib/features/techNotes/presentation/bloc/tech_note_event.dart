@@ -17,11 +17,15 @@ final class TechNoteCreateEvent extends TechNoteEvent {
   final String userId;
   final String title;
   final String content;
+  final String userName;
+  final String userEmail;
 
   const TechNoteCreateEvent({
     required this.userId,
     required this.title,
     required this.content,
+    required this.userName,
+    required this.userEmail,
   });
 }
 

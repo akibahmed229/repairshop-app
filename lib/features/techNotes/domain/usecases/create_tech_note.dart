@@ -17,6 +17,8 @@ class CreateTechNote
       userId: params.userId,
       title: params.title,
       content: params.content,
+      userName: params.userName,
+      userEmail: params.userEmail,
     );
   }
 }
@@ -25,9 +27,14 @@ class CreateTechNoteParams {
   String userId;
   String title;
   String content;
+  String? userName;
+  String? userEmail;
+
   CreateTechNoteParams({
     required this.userId,
     required this.title,
     required this.content,
+    this.userName,
+    this.userEmail,
   });
 }

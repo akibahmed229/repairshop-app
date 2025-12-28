@@ -10,6 +10,8 @@ abstract interface class TechNoteLocalDataSource {
     required String userId,
     required String title,
     required String content,
+    required String userName,
+    required String userEmail,
   });
 
   Future<String> updateTechNote({
@@ -45,6 +47,8 @@ class TechNoteLocalDataSourceImpl implements TechNoteLocalDataSource {
     required String userId,
     required String title,
     required String content,
+    required String userName,
+    required String userEmail,
   }) async {
     try {
       final String noteId = Uuid().v7();
@@ -55,6 +59,8 @@ class TechNoteLocalDataSourceImpl implements TechNoteLocalDataSource {
         "title": title,
         "content": content,
         "completed": 0,
+        "userName": userName,
+        "userEmail": userEmail,
         "createdAt": DateTime.now().toIso8601String(),
         "updatedAt": DateTime.now().toIso8601String(),
         "isSynced": 0,

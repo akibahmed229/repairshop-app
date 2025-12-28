@@ -77,6 +77,8 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
         userId: event.userId,
         title: event.title,
         content: event.content,
+        userName: event.userName,
+        userEmail: event.userEmail,
       ),
     );
 

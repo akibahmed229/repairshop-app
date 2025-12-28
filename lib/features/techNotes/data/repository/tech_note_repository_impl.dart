@@ -4,6 +4,7 @@ import 'package:repair_shop/core/error/failure.dart';
 import 'package:repair_shop/core/error/other_execptions.dart';
 import 'package:repair_shop/core/error/server_execptions.dart';
 import 'package:repair_shop/core/network/connection_checker.dart';
+import 'package:repair_shop/core/utils/sp_service.dart';
 import 'package:repair_shop/features/techNotes/data/datasources/tech_note_local_data_source.dart';
 import 'package:repair_shop/features/techNotes/data/datasources/tech_note_remote_data_source.dart';
 import 'package:repair_shop/features/techNotes/domain/entities/tech_note_entities.dart';
@@ -13,17 +14,24 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
   final TechNoteRemoteDataSource techNoteRemoteDataSource;
   final TechNoteLocalDataSource techNoteLocalDataSource;
   final ConnectionChecker connectionChecker;
+  final SpService spService;
+
   const TechNoteRepositoryImpl({
     required this.techNoteRemoteDataSource,
     required this.techNoteLocalDataSource,
     required this.connectionChecker,
+    required this.spService,
   });
 
   @override
   Future<Either<Failure, List<TechNoteEntities>>> getAllTechNotes() async {
     try {
       if (await connectionChecker.isConnected) {
-        final notes = await techNoteRemoteDataSource.getAllTechNotes();
+        final token = await spService.getToken();
+
+        final notes = await techNoteRemoteDataSource.getAllTechNotes(
+          token: token!,
+        );
 
         if (notes.isEmpty) {
           return left(Failure(message: "No notes exist"));
@@ -63,8 +71,11 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
           return right(true);
         }
 
+        final token = await spService.getToken();
+
         final result = await techNoteRemoteDataSource.syncTechNotes(
           notes: unSyncedTechNotes,
+          token: token!,
         );
 
         if (result) {
@@ -87,13 +98,18 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
     required String userId,
     required String title,
     required String content,
+    String? userName,
+    String? userEmail,
   }) async {
     try {
       if (await connectionChecker.isConnected) {
+        final token = await spService.getToken();
+
         final note = await techNoteRemoteDataSource.createTechNote(
           userId: userId,
           title: title,
           content: content,
+          token: token!,
         );
 
         return right(note);
@@ -102,6 +118,8 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
           userId: userId,
           title: title,
           content: content,
+          userName: userName!,
+          userEmail: userEmail!,
         );
 
         return right(note);
@@ -123,12 +141,15 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
   }) async {
     try {
       if (await connectionChecker.isConnected) {
+        final token = await spService.getToken();
+
         final note = await techNoteRemoteDataSource.updateTechNote(
           id: id,
           userId: userId,
           title: title,
           content: content,
           completed: completed,
+          token: token!,
         );
 
         return right(note);
@@ -154,7 +175,12 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
   Future<Either<Failure, String>> deleteTechNote({required String id}) async {
     try {
       if (await connectionChecker.isConnected) {
-        final note = await techNoteRemoteDataSource.deleteTechNote(id: id);
+        final token = await spService.getToken();
+
+        final note = await techNoteRemoteDataSource.deleteTechNote(
+          id: id,
+          token: token!,
+        );
 
         return right(note);
       } else {
@@ -173,7 +199,11 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
   Future<Either<Failure, List<UserEntities>>> getAllTechNoteUsers() async {
     try {
       if (await connectionChecker.isConnected) {
-        final users = await techNoteRemoteDataSource.getAllTechNoteUsers();
+        final token = await spService.getToken();
+
+        final users = await techNoteRemoteDataSource.getAllTechNoteUsers(
+          token: token!,
+        );
 
         if (users.isEmpty) {
           return left(Failure(message: "No note users exist"));

@@ -59,6 +59,8 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
           userId: selectedUser.id,
           title: _titleController.text.trim(),
           content: _contentController.text.trim(),
+          userName: selectedUser.name,
+          userEmail: selectedUser.email,
         ),
       );
     }
@@ -92,6 +94,8 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
               _contentController.clear();
               showSnackBar(context, "Note created successfully!");
               // Optional: Navigator.of(context).pop();
+
+              context.read<TechNoteBloc>().add(TechNotesGetEvent()); // referesh
             }
 
             // 3. HANDLE SUCCESS STATE IN LISTENER + SETSTATE
@@ -136,7 +140,7 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
                 .map(
                   (user) => DropdownMenuItem(
                     value: user.name,
-                    child: Text(user.name),
+                    child: Text(user.email),
                   ),
                 )
                 .toList();
@@ -169,7 +173,10 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
                   ),
                   const SizedBox(height: 20),
 
-                  const Text("Text:", style: TextStyle(color: Colors.white)),
+                  const Text(
+                    "Description:",
+                    style: TextStyle(color: Colors.white),
+                  ),
                   const SizedBox(height: 5),
                   TechNoteEditor(
                     controller: _contentController,

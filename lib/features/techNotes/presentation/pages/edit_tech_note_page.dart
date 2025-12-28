@@ -51,7 +51,9 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
   }
 
   void _updateNote() {
-    final selectedUser = _userEntities.firstWhere((u) => u.name == _assignedTo);
+    final selectedUser = _userEntities.firstWhere(
+      (u) => u.email == _assignedTo,
+    );
 
     context.read<TechNoteBloc>().add(
       TechNoteUpdateEvent(
@@ -104,26 +106,21 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
             _userEntities = state.users;
             _users
               ..clear()
-              ..addAll(state.users.map((user) => user.name));
+              ..addAll(state.users.map((user) => user.email));
 
             // Only set _assignedTo once after users are loaded
             if (_users.isNotEmpty &&
                 (_assignedTo.isEmpty || _assignedTo == '')) {
               _assignedTo = _users.firstWhere(
-                (u) =>
-                    u.toLowerCase() ==
-                    (widget.note.userName ?? '').toLowerCase(),
+                (u) => u == (widget.note.userEmail ?? ''),
                 orElse: () => _users.first,
               );
             }
           }
           if (state is TechNoteUpdateAndDeleteSuccess) {
             showSnackBar(context, state.message);
-            Navigator.pushAndRemoveUntil(
-              context,
-              TechNotePage.route(),
-              (route) => false,
-            );
+            Navigator.pop(context);
+            context.read<TechNoteBloc>().add(TechNotesGetEvent());
           }
         },
         builder: (context, state) {
@@ -162,7 +159,10 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
                   const SizedBox(height: 20),
 
                   // Content Input
-                  const Text("Text:", style: TextStyle(color: Colors.white)),
+                  const Text(
+                    "Description:",
+                    style: TextStyle(color: Colors.white),
+                  ),
                   const SizedBox(height: 5),
                   TechNoteEditor(
                     controller: _contentController,

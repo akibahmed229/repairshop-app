@@ -10,14 +10,18 @@ import 'package:repair_shop/features/techNotes/data/models/tech_note_model.dart'
 import 'package:http/http.dart' as http;
 
 abstract interface class TechNoteRemoteDataSource {
-  Future<List<TechNoteModel>> getAllTechNotes();
+  Future<List<TechNoteModel>> getAllTechNotes({required String token});
 
-  Future<bool> syncTechNotes({required List<TechNoteModel?> notes});
+  Future<bool> syncTechNotes({
+    required List<TechNoteModel?> notes,
+    required String token,
+  });
 
   Future<TechNoteModel> createTechNote({
     required String userId,
     required String title,
     required String content,
+    required String token,
   });
 
   Future<String> updateTechNote({
@@ -26,11 +30,12 @@ abstract interface class TechNoteRemoteDataSource {
     required String title,
     required String content,
     required bool completed,
+    required String token,
   });
 
-  Future<String> deleteTechNote({required String id});
+  Future<String> deleteTechNote({required String id, required String token});
 
-  Future<List<UserModel>> getAllTechNoteUsers();
+  Future<List<UserModel>> getAllTechNoteUsers({required String token});
 }
 
 class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
@@ -48,11 +53,11 @@ class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
   }
 
   @override
-  Future<List<TechNoteModel>> getAllTechNotes() async {
+  Future<List<TechNoteModel>> getAllTechNotes({required String token}) async {
     try {
       final response = await http.get(
         Uri.parse('${AppSecrets.backendUri}/api/techNotes'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'x-auth-token': token},
       );
 
       if (response.statusCode != 200) {
@@ -71,11 +76,14 @@ class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
   }
 
   @override
-  Future<bool> syncTechNotes({required List<TechNoteModel?> notes}) async {
+  Future<bool> syncTechNotes({
+    required List<TechNoteModel?> notes,
+    required String token,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse('${AppSecrets.backendUri}/api/sync'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'x-auth-token': token},
         body: jsonEncode(notes),
       );
 
@@ -94,11 +102,12 @@ class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
     required String userId,
     required String title,
     required String content,
+    required String token,
   }) async {
     try {
       final response = await http.post(
         Uri.parse('${AppSecrets.backendUri}/api/techNotes'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'x-auth-token': token},
         body: jsonEncode({
           "userId": userId,
           "title": title,
@@ -123,11 +132,12 @@ class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
     required String title,
     required String content,
     required bool completed,
+    required String token,
   }) async {
     try {
       final response = await http.put(
         Uri.parse('${AppSecrets.backendUri}/api/techNotes'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'x-auth-token': token},
         body: jsonEncode({
           "id": id,
           "userId": userId,
@@ -148,11 +158,14 @@ class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
   }
 
   @override
-  Future<String> deleteTechNote({required String id}) async {
+  Future<String> deleteTechNote({
+    required String id,
+    required String token,
+  }) async {
     try {
       final response = await http.delete(
         Uri.parse('${AppSecrets.backendUri}/api/techNotes'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'x-auth-token': token},
         body: jsonEncode({"id": id}),
       );
 
@@ -167,11 +180,11 @@ class TechNoteRemoteDataSourceImpl implements TechNoteRemoteDataSource {
   }
 
   @override
-  Future<List<UserModel>> getAllTechNoteUsers() async {
+  Future<List<UserModel>> getAllTechNoteUsers({required String token}) async {
     try {
       final response = await http.get(
         Uri.parse('${AppSecrets.backendUri}/api/users'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'x-auth-token': token},
       );
 
       if (response.statusCode != 200) {
