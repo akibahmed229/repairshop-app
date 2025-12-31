@@ -30,13 +30,6 @@ class _NewUserPageState extends State<NewUserPage> {
   String? selectedRole = 'Employee';
 
   @override
-  void initState() {
-    super.initState();
-
-    context.read<UserBloc>().add(const GetAllUsersEvent());
-  }
-
-  @override
   void dispose() {
     usernameController.dispose();
     passwordController.dispose();
@@ -79,6 +72,8 @@ class _NewUserPageState extends State<NewUserPage> {
             selectedRole = "Employee";
 
             showSnackBar(context, "User created successfully!");
+            Navigator.pop(context);
+            context.read<UserBloc>().add(const GetAllUsersEvent());
           }
         },
         builder: (context, state) {

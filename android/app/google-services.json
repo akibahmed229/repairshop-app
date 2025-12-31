@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "958823787688",
+    "project_id": "repairshopp-app",
+    "storage_bucket": "repairshopp-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:958823787688:android:9d2deaaddc0974c4e0e69d",
+        "android_client_info": {
+          "package_name": "com.example.repair_shop"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBd8kLRpJ9wD7JZo-iYgupVhlm7RD9M0qY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

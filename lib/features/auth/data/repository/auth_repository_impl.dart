@@ -90,6 +90,22 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, String>> syncFcmDeviceToken({required String fcmToken}) async {
+    try {
+      final sessionToken = await spService.getToken();
+
+      final updateFcmToken = await authRemoteDataSource.updateFcmToken(
+        sessionToken!,
+        fcmToken,
+      );
+
+      return right(updateFcmToken);
+    } on ServerExecptions catch (e) {
+      return left(Failure(message: e.message));
+    }
+  }
+
   // ----------------- Helper Methods -----------------
 
   Future<Either<Failure, UserEntities>> _getCachedUserData(

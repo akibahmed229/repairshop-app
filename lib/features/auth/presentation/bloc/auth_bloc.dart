@@ -4,6 +4,7 @@ import 'package:repair_shop/core/common/cubits/app_wide_user/app_wide_user_cubit
 import 'package:repair_shop/core/common/entities/user_entities.dart';
 import 'package:repair_shop/core/usecase/usecase.dart';
 import 'package:repair_shop/features/auth/domain/usecases/current_user.dart';
+import 'package:repair_shop/features/auth/domain/usecases/sync_fcm_device_token.dart';
 import 'package:repair_shop/features/auth/domain/usecases/user_log_in.dart';
 import 'package:repair_shop/features/auth/domain/usecases/user_sign_up.dart';
 
@@ -14,6 +15,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final UserSignUp _userSignUp;
   final UserLogIn _userLogIn;
   final CurrentUser _currentUser;
+  final SyncFcmDeviceToken _syncFcmDeviceToken;
 
   final AppWideUserCubit _appWideUserCubit;
 
@@ -21,16 +23,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required UserSignUp userSignUp,
     required UserLogIn userLogIn,
     required CurrentUser currentUser,
+    required SyncFcmDeviceToken syncFcmDeviceToken,
     required AppWideUserCubit appWideUserCubit,
   }) : _userSignUp = userSignUp,
        _userLogIn = userLogIn,
        _currentUser = currentUser,
+       _syncFcmDeviceToken = syncFcmDeviceToken,
        _appWideUserCubit = appWideUserCubit,
        super(AuthInitial()) {
     on<AuthEvent>((_, emit) => emit(AuthLoading()));
     on<AuthSignUpEvent>(_onAuthSignUpEvent);
     on<AuthLogInEvent>(_onAuthLogInEvent);
     on<AuthIsUserLoggedInEvent>(_onAuthIsUserLoggedInEvent);
+    on<AuthFcmSyncToken>(_onAuthFcmSyncToken);
   }
 
   void _onAuthSignUpEvent(
@@ -71,6 +76,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     res.fold(
       (failure) => emit(AuthFailure(failure.message)),
       (user) => _updateAppWideUserState(user, emit),
+    );
+  }
+
+  void _onAuthFcmSyncToken(
+    AuthFcmSyncToken event,
+    Emitter<AuthState> emit,
+  ) async {
+    final res = await _syncFcmDeviceToken(
+      SyncFcmDeviceTokenParams(fcmToken: event.fcmToken),
+    );
+
+    res.fold(
+      (failure) =>
+          emit(AuthFailure("Failed to sync FCM token: ${failure.message}")),
+      (message) => AuthFcmSyncTokenSuccess(message),
     );
   }
 

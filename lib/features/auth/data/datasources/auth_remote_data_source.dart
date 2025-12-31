@@ -21,6 +21,8 @@ abstract interface class AuthRemoteDataSource {
   });
 
   Future<UserModel?> currentUserData(String? token);
+
+  Future<String> updateFcmToken(String sessionToken, String fcmtoken);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -117,6 +119,28 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       ).copyWith(token: token);
     } catch (e) {
       _handleNetworkError(e);
+    }
+  }
+
+  @override
+  Future<String> updateFcmToken(String sessionToken, String fcmtoken) async {
+    try {
+      final response = await http.put(
+        Uri.parse('${AppSecrets.backendUri}/api/fcmToken'),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': sessionToken,
+        },
+        body: jsonEncode({"fcmToken": fcmtoken}),
+      );
+
+      if (response.statusCode != 200) {
+        throw jsonDecode(response.body)["message"];
+      }
+
+      return jsonDecode(response.body);
+    } catch (e) {
+      throw ServerExecptions(e.toString());
     }
   }
 }

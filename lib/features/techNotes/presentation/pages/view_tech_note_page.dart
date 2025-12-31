@@ -34,6 +34,9 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
           if (state is TechNoteFailure) {
             showSnackBar(context, state.message);
           }
+          if (state is TechNotesSyncSuccess) {
+            context.read<TechNoteBloc>().add(TechNotesGetEvent());
+          }
         },
         builder: (context, state) {
           if (state is TechNoteLoading) {
@@ -54,7 +57,7 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
               bloc.add(TechNotesSyncEvent());
 
               // 2. get the notes
-              bloc.add(TechNotesGetEvent());
+              // bloc.add(TechNotesGetEvent());
 
               // Wait for the reload to complete.
               // You might want to listen to state changes or

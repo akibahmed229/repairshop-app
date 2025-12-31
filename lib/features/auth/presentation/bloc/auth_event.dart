@@ -29,3 +29,9 @@ final class AuthLogInEvent extends AuthEvent {
 final class AuthIsUserLoggedInEvent extends AuthEvent {
   const AuthIsUserLoggedInEvent();
 }
+
+final class AuthFcmSyncToken extends AuthEvent {
+  final String fcmToken;
+
+  const AuthFcmSyncToken({required this.fcmToken});
+}

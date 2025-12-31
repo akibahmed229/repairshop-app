@@ -11,6 +11,7 @@ import 'package:repair_shop/features/auth/data/datasources/auth_remote_data_sour
 import 'package:repair_shop/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:repair_shop/features/auth/domain/repository/auth_repository.dart';
 import 'package:repair_shop/features/auth/domain/usecases/current_user.dart';
+import 'package:repair_shop/features/auth/domain/usecases/sync_fcm_device_token.dart';
 import 'package:repair_shop/features/auth/domain/usecases/user_log_in.dart';
 import 'package:repair_shop/features/auth/domain/usecases/user_sign_up.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
@@ -86,11 +87,15 @@ void _initAuth() {
     ..registerFactory(() => UserSignUp(authRepository: serviceLocator()))
     ..registerFactory(() => UserLogIn(authRepository: serviceLocator()))
     ..registerFactory(() => CurrentUser(authRepository: serviceLocator()))
+    ..registerFactory(
+      () => SyncFcmDeviceToken(authRepository: serviceLocator()),
+    )
     ..registerLazySingleton(
       () => AuthBloc(
         userSignUp: serviceLocator(),
         userLogIn: serviceLocator(),
         currentUser: serviceLocator(),
+        syncFcmDeviceToken: serviceLocator(),
         appWideUserCubit: serviceLocator(),
       ),
     );

@@ -116,7 +116,7 @@ class _EditUserPageState extends State<EditUserPage> {
 
           if (state is DeleteUserSuccessState) {
             showSnackBar(context, state.message);
-            showSnackBar(context, state.message);
+            Navigator.pop(context);
             context.read<UserBloc>().add(const GetAllUsersEvent());
           }
         },

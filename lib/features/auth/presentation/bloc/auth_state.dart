@@ -20,3 +20,9 @@ final class AuthSuccess extends AuthState {
 
   const AuthSuccess(this.user);
 }
+
+final class AuthFcmSyncTokenSuccess extends AuthState {
+  final String message;
+
+  const AuthFcmSyncTokenSuccess(this.message);
+}

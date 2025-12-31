@@ -15,4 +15,8 @@ abstract interface class AuthRepository {
   });
 
   Future<Either<Failure, UserEntities>> currentUserData();
+
+  Future<Either<Failure, String>> syncFcmDeviceToken({
+    required String fcmToken,
+  });
 }
