@@ -15,6 +15,12 @@ import 'package:repair_shop/features/auth/domain/usecases/sync_fcm_device_token.
 import 'package:repair_shop/features/auth/domain/usecases/user_log_in.dart';
 import 'package:repair_shop/features/auth/domain/usecases/user_sign_up.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:repair_shop/features/notifications/data/datasources/notification_remote_data_source.dart';
+import 'package:repair_shop/features/notifications/data/repository/notification_repository_impl.dart';
+import 'package:repair_shop/features/notifications/domain/repository/notification_repository.dart';
+import 'package:repair_shop/features/notifications/domain/usecases/get_all_notifications.dart';
+import 'package:repair_shop/features/notifications/domain/usecases/mark_notification_as_read.dart';
+import 'package:repair_shop/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:repair_shop/features/techNotes/data/datasources/tech_note_local_data_source.dart';
 import 'package:repair_shop/features/techNotes/data/datasources/tech_note_remote_data_source.dart';
 import 'package:repair_shop/features/techNotes/data/repository/tech_note_repository_impl.dart';
@@ -68,6 +74,7 @@ Future<void> initDependencies() async {
   _initAuth();
   _initTechNote();
   _initUsers();
+  _initNotifications();
 }
 
 void _initAuth() {
@@ -171,6 +178,32 @@ void _initUsers() {
         createNewUser: serviceLocator(),
         updateUser: serviceLocator(),
         deleteUser: serviceLocator(),
+      ),
+    );
+}
+
+void _initNotifications() {
+  serviceLocator
+    ..registerFactory<NotificationRemoteDataSource>(
+      () => NotificationRemoteDataSourceImpl(),
+    )
+    ..registerFactory<NotificationRepository>(
+      () => NotificationRepositoryImpl(
+        spService: serviceLocator(),
+        connectionChecker: serviceLocator(),
+        notificationRemoteDataSource: serviceLocator(),
+      ),
+    )
+    ..registerFactory(
+      () => GetAllNotifications(notificationRepository: serviceLocator()),
+    )
+    ..registerFactory(
+      () => MarkNotificationAsRead(notificationRepository: serviceLocator()),
+    )
+    ..registerLazySingleton(
+      () => NotificationBloc(
+        getAllNotifications: serviceLocator(),
+        markNotificationAsRead: serviceLocator(),
       ),
     );
 }

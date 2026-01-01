@@ -8,7 +8,6 @@ import 'package:repair_shop/core/utils/format_date.dart';
 import 'package:repair_shop/core/utils/show_snackbar.dart';
 import 'package:repair_shop/features/techNotes/domain/entities/tech_note_entities.dart';
 import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
-import 'package:repair_shop/features/techNotes/presentation/pages/tech_note_page.dart';
 import 'package:repair_shop/features/techNotes/presentation/widgets/tech_note_editor.dart';
 
 class EditTechNotePage extends StatefulWidget {

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:repair_shop/core/common/widgets/loader.dart';
 import 'package:repair_shop/core/utils/show_snackbar.dart';
+import 'package:repair_shop/features/notifications/presentation/bloc/notification_bloc.dart';
+import 'package:repair_shop/features/notifications/presentation/widgets/notification_bell.dart';
 import 'package:repair_shop/features/techNotes/domain/entities/tech_note_entities.dart';
 import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
 import 'package:repair_shop/features/techNotes/presentation/widgets/tech_note_card.dart';
@@ -18,6 +20,7 @@ class ViewTechNotePage extends StatefulWidget {
 class _ViewTechNotePageState extends State<ViewTechNotePage> {
   int noteCount = 0;
   List<TechNoteEntities> notes = [];
+
   @override
   void initState() {
     super.initState();
@@ -28,7 +31,11 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('TechNotes'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('TechNotes'),
+        centerTitle: true,
+        actions: const [NotificationBell(), SizedBox(width: 10)],
+      ),
       body: BlocConsumer<TechNoteBloc, TechNoteState>(
         listener: (context, state) {
           if (state is TechNoteFailure) {
@@ -58,6 +65,8 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
 
               // 2. get the notes
               // bloc.add(TechNotesGetEvent());
+
+              context.read<NotificationBloc>().add(FetchNotificationsEvent());
 
               // Wait for the reload to complete.
               // You might want to listen to state changes or

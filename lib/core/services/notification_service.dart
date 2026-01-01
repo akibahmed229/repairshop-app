@@ -2,7 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
-import '../../main.dart'; // Import main.dart to access rootScaffoldMessengerKey
+import 'package:repair_shop/main.dart';
 
 class NotificationService {
   static final FirebaseMessaging _firebaseMessaging =

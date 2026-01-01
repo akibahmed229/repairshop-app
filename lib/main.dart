@@ -7,6 +7,7 @@ import 'package:repair_shop/core/services/notification_service.dart';
 import 'package:repair_shop/core/theme/theme.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:repair_shop/features/auth/presentation/pages/login_page.dart';
+import 'package:repair_shop/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
 import 'package:repair_shop/features/techNotes/presentation/pages/tech_note_page.dart';
 import 'package:repair_shop/features/users/presentation/bloc/user_bloc.dart';
@@ -29,6 +30,7 @@ void main() async {
         BlocProvider(create: (_) => serviceLocator<AppWideUserCubit>()),
         BlocProvider(create: (_) => serviceLocator<TechNoteBloc>()),
         BlocProvider(create: (_) => serviceLocator<UserBloc>()),
+        BlocProvider(create: (_) => serviceLocator<NotificationBloc>()),
       ],
       child: const RepairShop(),
     ),
@@ -59,7 +61,7 @@ class _RepairShopState extends State<RepairShop> {
       home: BlocListener<AppWideUserCubit, AppWideUserState>(
         listener: (context, state) {
           if (state is AppWideUserLoggedIn) {
-            // 1. Grab the bloc instance immediately
+            // Grab the bloc instance immediately
             final authBloc = context.read<AuthBloc>();
 
             // Initialize service only when logged in
