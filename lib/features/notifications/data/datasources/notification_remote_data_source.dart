@@ -12,6 +12,13 @@ abstract interface class NotificationRemoteDataSource {
     required String token,
     required String notificationId,
   });
+
+  Future<String> deleteAllNotifications({required String token});
+
+  Future<bool> syncAllNotifications({
+    required List<NotificationModel?> notifications,
+    required String token,
+  });
 }
 
 class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
@@ -36,7 +43,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
           .map((notification) => NotificationModel.fromJson(notification))
           .toList();
     } catch (e) {
-      throw ServerExecptions("Failed to create note: ${e.toString()}");
+      throw ServerExecptions("Failed to get notification: ${e.toString()}");
     }
   }
 
@@ -59,7 +66,50 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
 
       return NotificationModel.fromJson(jsonDecode(response.body)["data"]);
     } catch (e) {
-      throw ServerExecptions("Failed to create note: ${e.toString()}");
+      throw ServerExecptions(
+        "Failed to mark notification as read: ${e.toString()}",
+      );
+    }
+  }
+
+  @override
+  Future<String> deleteAllNotifications({required String token}) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('${AppSecrets.backendUri}/api/notifications/deleteAll'),
+        headers: {'Content-Type': 'application/json', 'x-auth-token': token},
+      );
+
+      if (response.statusCode != 200) {
+        throw jsonDecode(response.body)["message"] ??
+            'Unknown error occurred on the server.';
+      }
+
+      return jsonDecode(response.body)["message"];
+    } catch (e) {
+      throw ServerExecptions("Failed to delete notification: ${e.toString()}");
+    }
+  }
+
+  @override
+  Future<bool> syncAllNotifications({
+    required List<NotificationModel?> notifications,
+    required String token,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${AppSecrets.backendUri}/api/notifications/sync'),
+        headers: {'Content-Type': 'application/json', 'x-auth-token': token},
+        body: jsonEncode(notifications),
+      );
+
+      if (response.statusCode != 201) {
+        throw jsonDecode(response.body)['message'];
+      }
+
+      return true;
+    } catch (e) {
+      throw ServerExecptions("Failed to synced notification: ${e.toString()}");
     }
   }
 }

@@ -14,6 +14,6 @@ class GetAllNotifications
   Future<Either<Failure, List<NotificationEntities>>> call(
     NoParams params,
   ) async {
-    return notificationRepository.getNotifications();
+    return await notificationRepository.getNotifications();
   }
 }

@@ -15,5 +15,6 @@ class AppSecrets {
   static final userTable = getRequired("USER_TABLE");
   static final techNotesTable = getRequired("TECH_NOTES_TABLE");
   static final techNoteUsersTable = getRequired("TECH_NOTE_USERS_TABLE");
+  static final notificationsTable = getRequired("NOTIFICATIONS_TABLE");
   static final sqfliteDbName = getRequired("SQFLITE_DB_NAME");
 }

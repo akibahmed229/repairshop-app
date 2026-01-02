@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:repair_shop/core/usecase/usecase.dart';
 import 'package:repair_shop/features/notifications/domain/entities/notification_entities.dart';
+import 'package:repair_shop/features/notifications/domain/usecases/delete_all_notifications.dart';
 import 'package:repair_shop/features/notifications/domain/usecases/get_all_notifications.dart';
 import 'package:repair_shop/features/notifications/domain/usecases/mark_notification_as_read.dart';
+import 'package:repair_shop/features/notifications/domain/usecases/sync_all_notifications.dart';
 
 part 'notification_event.dart';
 part 'notification_state.dart';
@@ -12,19 +14,27 @@ part 'notification_state.dart';
 class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   final GetAllNotifications _getAllNotifications;
   final MarkNotificationAsRead _markNotificationAsRead;
+  final SyncAllNotifications _syncAllNotifications;
+  final DeleteAllNotifications _deleteAllNotifications;
 
   NotificationBloc({
     required GetAllNotifications getAllNotifications,
     required MarkNotificationAsRead markNotificationAsRead,
+    required SyncAllNotifications syncAllNotifications,
+    required DeleteAllNotifications deleteAllNotifications,
   }) : _getAllNotifications = getAllNotifications,
        _markNotificationAsRead = markNotificationAsRead,
+       _syncAllNotifications = syncAllNotifications,
+       _deleteAllNotifications = deleteAllNotifications,
        super(NotificationInitial()) {
     on<NotificationEvent>((event, emit) => emit(NotificationLoading()));
-    on<FetchNotificationsEvent>(_onNotificationInboxLoaded);
-    on<MarkNotificationAsReadEvent>(_onNotificationMarkedASRead);
+    on<FetchNotificationsEvent>(_onFetchNotificationsEvent);
+    on<MarkNotificationAsReadEvent>(_onMarkNotificationAsReadEvent);
+    on<NotificationSyncEvent>(_onNotificationSyncEvent);
+    on<DeleteAllNotificationEvent>(_onDeleteAllNotificationEvent);
   }
 
-  void _onNotificationInboxLoaded(
+  void _onFetchNotificationsEvent(
     FetchNotificationsEvent event,
     Emitter<NotificationState> emit,
   ) async {
@@ -36,7 +46,7 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     );
   }
 
-  void _onNotificationMarkedASRead(
+  void _onMarkNotificationAsReadEvent(
     MarkNotificationAsReadEvent event,
     Emitter<NotificationState> emit,
   ) async {
@@ -47,6 +57,30 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     res.fold(
       (failure) => emit(NotificationFailure(message: failure.message)),
       (notification) => emit(NotificationMarkedASRead(notification)),
+    );
+  }
+
+  void _onNotificationSyncEvent(
+    NotificationSyncEvent event,
+    Emitter<NotificationState> emit,
+  ) async {
+    final res = await _syncAllNotifications(NoParams());
+
+    res.fold(
+      (failure) => emit(NotificationFailure(message: failure.message)),
+      (isSynced) => emit(NotificationSyncSucess(isSynced)),
+    );
+  }
+
+  void _onDeleteAllNotificationEvent(
+    DeleteAllNotificationEvent event,
+    Emitter<NotificationState> emit,
+  ) async {
+    final res = await _deleteAllNotifications(NoParams());
+
+    res.fold(
+      (failure) => emit(NotificationFailure(message: failure.message)),
+      (message) => emit(AllNotificationDeleted(message)),
     );
   }
 }

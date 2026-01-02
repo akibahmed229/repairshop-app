@@ -8,4 +8,8 @@ abstract interface class NotificationRepository {
   Future<Either<Failure, NotificationEntities>> markAsRead({
     required String notificationId,
   });
+
+  Future<Either<Failure, String>> deleteAllNotifications();
+
+  Future<Either<Failure, bool>> syncAllNotifications();
 }

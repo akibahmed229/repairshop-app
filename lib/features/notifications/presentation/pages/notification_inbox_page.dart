@@ -22,10 +22,28 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
     context.read<NotificationBloc>().add(FetchNotificationsEvent());
   }
 
+  void deleteAllNotification() {
+    context.read<NotificationBloc>().add(DeleteAllNotificationEvent());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Notifications")),
+      appBar: AppBar(
+        title: const Text("Notifications"),
+        actions: [
+          IconButton(
+            onPressed: deleteAllNotification,
+            icon: CircleAvatar(
+              backgroundColor: AppPallete.borderColor.withValues(alpha: 0.5),
+              child: const Icon(
+                Icons.clear_all_rounded,
+                color: AppPallete.errorColor,
+              ),
+            ),
+          ),
+        ],
+      ),
       body: BlocConsumer<NotificationBloc, NotificationState>(
         listener: (context, state) {
           if (state is NotificationFailure) {
@@ -47,6 +65,10 @@ class _NotificationInboxPageState extends State<NotificationInboxPage> {
 
           if (state is NotificationMarkedASRead) {
             context.read<NotificationBloc>().add(FetchNotificationsEvent());
+          }
+
+          if (state is AllNotificationDeleted) {
+            notifications = [];
           }
 
           if (notifications.isEmpty) {
@@ -101,7 +123,7 @@ class _NotificationTile extends StatelessWidget {
           Text(notification.body, maxLines: 2, overflow: TextOverflow.ellipsis),
           const SizedBox(height: 4),
           Text(
-            DateFormat('MMM d, h:mm a').format(notification.createdAt!),
+            DateFormat('MMM d, h:mm a').format(notification.createdAt),
             style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],

@@ -6,7 +6,8 @@ class NotificationEntities {
   final String type;
   final String? noteId;
   final bool isRead;
-  final DateTime? createdAt;
+  final DateTime createdAt;
+  final bool? isSynced;
 
   const NotificationEntities({
     required this.id,
@@ -16,6 +17,7 @@ class NotificationEntities {
     required this.type,
     this.noteId,
     required this.isRead,
-    this.createdAt,
+    required this.createdAt,
+    this.isSynced,
   });
 }

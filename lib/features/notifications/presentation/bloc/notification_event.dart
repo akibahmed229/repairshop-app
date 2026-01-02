@@ -14,3 +14,11 @@ final class MarkNotificationAsReadEvent extends NotificationEvent {
 
   const MarkNotificationAsReadEvent({required this.notificationId});
 }
+
+final class NotificationSyncEvent extends NotificationEvent {
+  const NotificationSyncEvent();
+}
+
+final class DeleteAllNotificationEvent extends NotificationEvent {
+  const DeleteAllNotificationEvent();
+}

@@ -14,7 +14,7 @@ class MarkNotificationAsRead
   Future<Either<Failure, NotificationEntities>> call(
     MarkNotificationParam params,
   ) async {
-    return notificationRepository.markAsRead(
+    return await notificationRepository.markAsRead(
       notificationId: params.notificationId,
     );
   }

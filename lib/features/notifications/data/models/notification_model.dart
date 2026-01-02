@@ -9,21 +9,61 @@ class NotificationModel extends NotificationEntities {
     required super.type,
     super.noteId,
     required super.isRead,
-    super.createdAt,
+    required super.createdAt,
+    super.isSynced,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
-      id: json['notification_id'] ?? json['id'],
-      userId: json['user_id'] ?? '',
+      id: json['id'],
+      userId: json['userId'] ?? '',
       title: json['title'] ?? '',
       body: json['body'] ?? '',
       type: json['type'] ?? 'task_assigned',
-      noteId: json['note_id'],
-      isRead: json['is_read'] ?? false,
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
-          : DateTime.now(),
+      noteId: json['noteId'],
+      isRead: json['isRead'] is int
+          ? json["isRead"] == 1
+          : json["isRead"] == true,
+      createdAt: DateTime.parse(json['createdAt']),
+      isSynced: json['isSynced'] == 1 || json['isSynced'] == true,
     );
+  }
+
+  NotificationModel copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    String? body,
+    String? type,
+    String? noteId,
+    bool? isRead,
+    DateTime? createdAt,
+    bool? isSynced,
+  }) {
+    return NotificationModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      type: type ?? this.type,
+      noteId: noteId ?? this.noteId,
+      isRead: isRead ?? this.isRead,
+      createdAt: createdAt ?? this.createdAt,
+      isSynced: isSynced ?? this.isSynced,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "userId": userId,
+      "title": title,
+      "body": body,
+      "type": type,
+      "noteId": noteId,
+      "isRead": isRead ? 1 : 0,
+      "createdAt": createdAt.toIso8601String(),
+      "isSynced": (isSynced ?? false) ? 1 : 0,
+    };
   }
 }

@@ -6,12 +6,15 @@ import 'package:repair_shop/features/techNotes/presentation/pages/edit_tech_note
 
 class TechNoteCard extends StatelessWidget {
   final TechNoteEntities note;
-  const TechNoteCard({super.key, required this.note});
+  final bool isGridView;
+  const TechNoteCard({super.key, required this.note, required this.isGridView});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      margin: isGridView
+          ? EdgeInsets.zero
+          : const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       elevation: 3,
       child: ListTile(
         contentPadding: const EdgeInsets.all(12),
@@ -55,10 +58,12 @@ class TechNoteCard extends StatelessWidget {
                   size: 20, // Adjusted size to fit better
                 ),
                 const SizedBox(width: 6),
-                const Text(
-                  "Status: ",
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
+                if (!isGridView)
+                  const Text(
+                    "Status: ",
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  ),
+
                 Text(
                   note.completed ? "Completed" : "Opened",
                   style: TextStyle(
@@ -73,10 +78,12 @@ class TechNoteCard extends StatelessWidget {
               children: [
                 const Icon(Icons.person, size: 20),
                 const SizedBox(width: 6),
-                const Text(
-                  "Owner: ",
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
+                if (!isGridView)
+                  const Text(
+                    "Owner: ",
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  ),
+
                 Expanded(
                   // Added Expanded here too just in case username is huge
                   child: Text(
@@ -88,28 +95,41 @@ class TechNoteCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.event_note, size: 16),
-                    const SizedBox(width: 5),
-                    Text(formatDateByMMMYYYY(note.createdAt)),
-                  ],
-                ),
-                Row(
-                  children: [
-                    const Icon(Icons.history_toggle_off, size: 16),
-                    const SizedBox(width: 5),
-                    Text(formatDateByMMMYYYY(note.updatedAt)),
-                  ],
-                ),
-              ],
-            ),
+            // --- DYNAMIC DATETIME SECTION ---
+            if (isGridView)
+              // GRID: Stack them vertically to prevent overflow
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildDateItem(Icons.event_note, note.createdAt),
+                  const SizedBox(height: 4),
+                  _buildDateItem(Icons.history_toggle_off, note.updatedAt),
+                ],
+              )
+            else
+              // LIST: Keep them side-by-side
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildDateItem(Icons.event_note, note.createdAt),
+                  _buildDateItem(Icons.history_toggle_off, note.updatedAt),
+                ],
+              ),
           ],
         ),
       ),
+    );
+  }
+
+  // Helper widget to keep the date code clean
+  Widget _buildDateItem(IconData icon, DateTime date) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16),
+        const SizedBox(width: 5),
+        Text(formatDateByMMMYYYY(date), style: const TextStyle(fontSize: 12)),
+      ],
     );
   }
 }

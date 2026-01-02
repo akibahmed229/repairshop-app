@@ -20,6 +20,7 @@ class ViewTechNotePage extends StatefulWidget {
 class _ViewTechNotePageState extends State<ViewTechNotePage> {
   int noteCount = 0;
   List<TechNoteEntities> notes = [];
+  bool isGridView = false;
 
   @override
   void initState() {
@@ -34,7 +35,18 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
       appBar: AppBar(
         title: const Text('TechNotes'),
         centerTitle: true,
-        actions: const [NotificationBell(), SizedBox(width: 10)],
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                isGridView = !isGridView;
+              });
+            },
+            icon: Icon(isGridView ? Icons.view_list : Icons.grid_view_rounded),
+          ),
+          const NotificationBell(),
+          const SizedBox(width: 10),
+        ],
       ),
       body: BlocConsumer<TechNoteBloc, TechNoteState>(
         listener: (context, state) {
@@ -58,15 +70,16 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
           // Default widget when no condition matches
           return RefreshIndicator(
             onRefresh: () async {
-              final bloc = context.read<TechNoteBloc>();
+              final techNoteBloc = context.read<TechNoteBloc>();
+              final notificationBloc = context.read<NotificationBloc>();
 
-              // 1. Trigger Sync
-              bloc.add(TechNotesSyncEvent());
+              // Sync and Fetch TechNotes
+              techNoteBloc.add(TechNotesSyncEvent());
 
-              // 2. get the notes
-              // bloc.add(TechNotesGetEvent());
-
-              context.read<NotificationBloc>().add(FetchNotificationsEvent());
+              // 2. REFRESH NOTIFICATIONS
+              // This will trigger the NotificationBell to rebuild automatically
+              notificationBloc.add(NotificationSyncEvent());
+              notificationBloc.add(FetchNotificationsEvent());
 
               // Wait for the reload to complete.
               // You might want to listen to state changes or
@@ -76,19 +89,35 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
               ); // Delay for UX
             },
 
-            child: Scrollbar(
-              child: ListView.builder(
-                itemCount: notes.length,
-                itemBuilder: (context, index) {
-                  final note = notes[index];
-
-                  return TechNoteCard(note: note);
-                },
-              ),
-            ),
+            child: isGridView ? _buildGridView() : _buildListView(),
           );
         },
       ),
+    );
+  }
+
+  // Helper for List Layout
+  Widget _buildListView() {
+    return ListView.builder(
+      itemCount: notes.length,
+      itemBuilder: (context, index) =>
+          TechNoteCard(note: notes[index], isGridView: isGridView),
+    );
+  }
+
+  // Helper for Grid Layout
+  Widget _buildGridView() {
+    return GridView.builder(
+      padding: const EdgeInsets.all(8),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, // 2 items per row
+        childAspectRatio: 0.9, // Adjust this based on TechNoteCard height
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemCount: notes.length,
+      itemBuilder: (context, index) =>
+          TechNoteCard(note: notes[index], isGridView: isGridView),
     );
   }
 }

@@ -30,3 +30,15 @@ final class NotificationMarkedASRead extends NotificationState {
 
   const NotificationMarkedASRead(this.notification);
 }
+
+final class NotificationSyncSucess extends NotificationState {
+  final bool isSynced;
+
+  const NotificationSyncSucess(this.isSynced);
+}
+
+final class AllNotificationDeleted extends NotificationState {
+  final String message;
+
+  const AllNotificationDeleted(this.message);
+}

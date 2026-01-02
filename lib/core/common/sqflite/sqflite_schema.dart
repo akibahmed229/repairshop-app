@@ -41,4 +41,19 @@ class SqfliteSchema {
      updatedAt TEXT NOT NULL
  );
 ''';
+
+  static final createNotificationsTable =
+      '''
+  CREATE TABLE ${AppSecrets.notificationsTable}(
+      id TEXT PRIMARY KEY NOT NULL,
+      userId TEXT NOT NULL,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      type TEXT NOT NULL,
+      noteId TEXT NOT NULL,
+      isRead INTEGER NOT NULL,
+      createdAt TEXT NOT NULL,
+      isSynced INTEGER NOT NULL
+  );
+''';
 }
