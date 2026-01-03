@@ -73,4 +73,3 @@ class _TechNotePageState extends State<TechNotePage> {
     );
   }
 }
-

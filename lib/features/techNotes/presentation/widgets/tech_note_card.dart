@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:repair_shop/core/common/entities/user_entities.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/core/utils/format_date.dart';
 import 'package:repair_shop/features/techNotes/domain/entities/tech_note_entities.dart';
@@ -6,8 +7,15 @@ import 'package:repair_shop/features/techNotes/presentation/pages/edit_tech_note
 
 class TechNoteCard extends StatelessWidget {
   final TechNoteEntities note;
+  final List<UserEntities> users;
   final bool isGridView;
-  const TechNoteCard({super.key, required this.note, required this.isGridView});
+
+  const TechNoteCard({
+    super.key,
+    required this.note,
+    required this.users,
+    required this.isGridView,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +25,7 @@ class TechNoteCard extends StatelessWidget {
           : const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       elevation: 3,
       child: ListTile(
-        contentPadding: const EdgeInsets.all(12),
+        contentPadding: const EdgeInsets.all(20),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -36,7 +44,7 @@ class TechNoteCard extends StatelessWidget {
               constraints:
                   const BoxConstraints(), // Removes default minimum size constraints
               onPressed: () {
-                Navigator.push(context, EditTechNotePage.route(note));
+                Navigator.push(context, EditTechNotePage.route(note, users));
               },
               icon: CircleAvatar(
                 backgroundColor: AppPallete.borderColor.withValues(alpha: 0.5),

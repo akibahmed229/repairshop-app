@@ -30,7 +30,6 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
   void initState() {
     super.initState();
     // Fetch users immediately
-    context.read<TechNoteBloc>().add(const TechNotesGetAllUsersEvent());
   }
 
   @override

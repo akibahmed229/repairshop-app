@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:repair_shop/core/common/entities/user_entities.dart';
 import 'package:repair_shop/core/common/widgets/loader.dart';
 import 'package:repair_shop/core/utils/show_snackbar.dart';
 import 'package:repair_shop/features/notifications/presentation/bloc/notification_bloc.dart';
@@ -20,6 +21,7 @@ class ViewTechNotePage extends StatefulWidget {
 class _ViewTechNotePageState extends State<ViewTechNotePage> {
   int noteCount = 0;
   List<TechNoteEntities> notes = [];
+  List<UserEntities> users = [];
   bool isGridView = false;
 
   @override
@@ -27,6 +29,7 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
     super.initState();
     context.read<TechNoteBloc>().add(TechNotesSyncEvent());
     context.read<TechNoteBloc>().add(TechNotesGetEvent());
+    context.read<TechNoteBloc>().add(TechNotesGetAllUsersEvent());
   }
 
   @override
@@ -44,7 +47,7 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
             },
             icon: Icon(isGridView ? Icons.view_list : Icons.grid_view_rounded),
           ),
-          const NotificationBell(),
+          NotificationBell(),
           const SizedBox(width: 10),
         ],
       ),
@@ -67,6 +70,10 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
             notes = state.notes;
           }
 
+          if (state is TechNotesGetAllUsersSuccess) {
+            users = state.users;
+          }
+
           // Default widget when no condition matches
           return RefreshIndicator(
             onRefresh: () async {
@@ -75,6 +82,7 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
 
               // Sync and Fetch TechNotes
               techNoteBloc.add(TechNotesSyncEvent());
+              techNoteBloc.add(TechNotesGetAllUsersEvent());
 
               // 2. REFRESH NOTIFICATIONS
               // This will trigger the NotificationBell to rebuild automatically
@@ -100,8 +108,11 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
   Widget _buildListView() {
     return ListView.builder(
       itemCount: notes.length,
-      itemBuilder: (context, index) =>
-          TechNoteCard(note: notes[index], isGridView: isGridView),
+      itemBuilder: (context, index) => TechNoteCard(
+        note: notes[index],
+        users: users,
+        isGridView: isGridView,
+      ),
     );
   }
 
@@ -116,8 +127,11 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
         mainAxisSpacing: 8,
       ),
       itemCount: notes.length,
-      itemBuilder: (context, index) =>
-          TechNoteCard(note: notes[index], isGridView: isGridView),
+      itemBuilder: (context, index) => TechNoteCard(
+        note: notes[index],
+        users: users,
+        isGridView: isGridView,
+      ),
     );
   }
 }

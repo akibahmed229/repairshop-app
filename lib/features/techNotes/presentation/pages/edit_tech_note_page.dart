@@ -11,12 +11,15 @@ import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.
 import 'package:repair_shop/features/techNotes/presentation/widgets/tech_note_editor.dart';
 
 class EditTechNotePage extends StatefulWidget {
-  static route(TechNoteEntities note) =>
-      MaterialPageRoute(builder: (context) => EditTechNotePage(note: note));
+  static route(TechNoteEntities note, List<UserEntities> users) =>
+      MaterialPageRoute(
+        builder: (context) => EditTechNotePage(note: note, users: users),
+      );
 
   final TechNoteEntities note;
+  final List<UserEntities> users;
 
-  const EditTechNotePage({super.key, required this.note});
+  const EditTechNotePage({super.key, required this.note, required this.users});
 
   @override
   State<EditTechNotePage> createState() => _EditTechNotePageState();
@@ -39,7 +42,8 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
     _contentController = TextEditingController(text: widget.note.content);
     _completed = widget.note.completed;
 
-    context.read<TechNoteBloc>().add(TechNotesGetAllUsersEvent());
+    // FIX: Populate the local lists immediately from the passed widget data
+    _populateUsers(widget.users);
   }
 
   @override
@@ -67,6 +71,21 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
 
   void _deleteNote() {
     context.read<TechNoteBloc>().add(TechNoteDeleteEvent(id: widget.note.id));
+  }
+
+  void _populateUsers(List<UserEntities> users) {
+    setState(() {
+      _userEntities = users;
+      _users.clear();
+      _users.addAll(users.map((user) => user.email));
+
+      // Match the current note's userEmail to the list, or default to first
+      if (_users.isNotEmpty) {
+        _assignedTo = _users.contains(widget.note.userEmail)
+            ? widget.note.userEmail!
+            : _users.first;
+      }
+    });
   }
 
   @override
@@ -101,21 +120,11 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
           if (state is TechNoteFailure) {
             showSnackBar(context, state.message);
           }
-          if (state is TechNotesGetAllUsersSuccess) {
-            _userEntities = state.users;
-            _users
-              ..clear()
-              ..addAll(state.users.map((user) => user.email));
 
-            // Only set _assignedTo once after users are loaded
-            if (_users.isNotEmpty &&
-                (_assignedTo.isEmpty || _assignedTo == '')) {
-              _assignedTo = _users.firstWhere(
-                (u) => u == (widget.note.userEmail ?? ''),
-                orElse: () => _users.first,
-              );
-            }
+          if (state is TechNotesGetAllUsersSuccess) {
+            _populateUsers(state.users);
           }
+
           if (state is TechNoteUpdateAndDeleteSuccess) {
             showSnackBar(context, state.message);
             Navigator.pop(context);
@@ -125,6 +134,10 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
         builder: (context, state) {
           if (state is TechNoteLoading) {
             return const Loader();
+          }
+
+          if (_users.isEmpty && state is! TechNoteLoading) {
+            return const Center(child: Text("Loading users..."));
           }
 
           return Padding(
@@ -197,17 +210,25 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
                   ),
                   const SizedBox(height: 5),
                   MyDropDownMenu(
-                    value: _assignedTo,
+                    // Ensure value is never empty if items exist
+                    value: _assignedTo.isEmpty && _users.isNotEmpty
+                        ? _users.first
+                        : _assignedTo,
                     onChanged: (value) {
-                      setState(() {
-                        _assignedTo = value ?? _assignedTo;
-                      });
+                      if (value != null) {
+                        setState(() => _assignedTo = value);
+                      }
                     },
-                    items: _users.map((user) {
-                      return DropdownMenuItem(value: user, child: Text(user));
+                    items: _users.map((email) {
+                      return DropdownMenuItem(
+                        value: email,
+                        child: Text(
+                          email,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      );
                     }).toList(),
                   ),
-
                   const SizedBox(height: 20),
 
                   // Created & Updated in a row
