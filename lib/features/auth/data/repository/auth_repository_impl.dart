@@ -48,15 +48,27 @@ class AuthRepositoryImpl implements AuthRepository {
   }) async {
     try {
       if (await connectionChecker.isConnected) {
+        // check if user already exist in local db
+        final token = await spService.getToken();
+        final userCheck = await authLocalDataSource.getCachedUserByToken(
+          token!,
+        );
+
+        if (userCheck?.email == email) {
+          return left(Failure(message: "User already exist"));
+        }
+
         final user = await authRemoteDataSource.logInWithEmailPassword(
           email: email,
           password: password,
         );
 
+        await authLocalDataSource.cacheUser(user);
+
         if (user.token?.isNotEmpty ?? false) {
           spService.setToken(user.token!);
-          await authLocalDataSource.cacheUser(user);
         }
+
         return right(user);
       }
       // If not connected
@@ -91,7 +103,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, String>> syncFcmDeviceToken({required String fcmToken}) async {
+  Future<Either<Failure, String>> syncFcmDeviceToken({
+    required String fcmToken,
+  }) async {
     try {
       final sessionToken = await spService.getToken();
 

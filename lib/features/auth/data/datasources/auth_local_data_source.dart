@@ -9,6 +9,7 @@ abstract interface class AuthLocalDataSource {
   Future<void> cacheUser(UserModel user);
   Future<UserModel?> getCachedUser();
   Future<void> clearUser();
+  Future<UserModel?> getCachedUserByToken(String token);
 }
 
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
@@ -20,7 +21,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
     try {
       await database.insert(AppSecrets.userTable, {
         "id": user.id,
-        "name": user.email,
+        "name": user.name,
         "email": user.email,
         "roles": jsonEncode(user.roles ?? []),
         "active": user.active ?? true ? 1 : 0,
@@ -48,6 +49,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
         id: data['id'],
         name: data["name"],
         email: data["email"],
+        token: data["token"],
         roles: (jsonDecode(data['roles']) as List<dynamic>)
             .map((role) => role.toString())
             .toList(),
@@ -64,6 +66,36 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       await database.delete(AppSecrets.userTable);
     } catch (e) {
       throw ServerExecptions('Failed to clear user data: $e');
+    }
+  }
+
+  @override
+  Future<UserModel?> getCachedUserByToken(String token) async {
+    try {
+      final List<Map<String, dynamic>> map = await database.query(
+        AppSecrets.userTable,
+        where: "token = ?",
+        whereArgs: [token],
+      );
+
+      if (map.isEmpty) {
+        return null;
+      }
+
+      final data = map.first;
+
+      return UserModel(
+        id: data['id'],
+        name: data["name"],
+        email: data["email"],
+        token: data['token'],
+        roles: (jsonDecode(data['roles']) as List<dynamic>)
+            .map((role) => role.toString())
+            .toList(),
+        active: data["active"] == 1,
+      );
+    } catch (e) {
+      throw ServerExecptions('Failed to get cached user data: $e');
     }
   }
 }

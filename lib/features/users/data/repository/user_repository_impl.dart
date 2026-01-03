@@ -128,4 +128,84 @@ class UserRepositoryImpl implements UserRepository {
       return left(Failure(message: e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, List<UserEntities>>> getAllCachedUsers() async {
+    try {
+      final userList = await userLocalDataSource.getAllCachedUsers();
+
+      if (userList.isEmpty) {
+        return left(Failure(message: "No User Found"));
+      }
+
+      return right(userList.cast<UserEntities>());
+    } on ServerExecptions catch (e) {
+      return left(Failure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntities>> switchAccount({
+    required String id,
+  }) async {
+    try {
+      if (await connectionChecker.isConnected) {
+        final user = await userLocalDataSource.getUserById(id);
+
+        if (user == null) {
+          return left(Failure(message: "Failed to switch user"));
+        }
+
+        await spService.setToken(user.token!);
+
+        return right(user);
+      } else {
+        return left(Failure(message: "No Internet Connection!!!"));
+      }
+    } on ServerExecptions catch (e) {
+      return left(Failure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntities>> signOutUser({
+    required String id,
+  }) async {
+    try {
+      if (await connectionChecker.isConnected) {
+        await userLocalDataSource.logoutUser(id);
+
+        final getUser = await userLocalDataSource.getFirstCachedUser();
+
+        if (getUser == null) {
+          await spService.setToken('');
+          return left(Failure(message: "No User Exist! Please login."));
+        }
+        await spService.setToken(getUser.token!);
+
+        return right(getUser);
+      } else {
+        return left(Failure(message: "No Internet Connection!!!"));
+      }
+    } on ServerExecptions catch (e) {
+      return left(Failure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> signOutAllUser() async {
+    try {
+      if (await connectionChecker.isConnected) {
+        await userLocalDataSource.logoutALlUser();
+
+        await spService.setToken('');
+
+        return right(true);
+      } else {
+        return left(Failure(message: "No Internet Connection!!!"));
+      }
+    } on ServerExecptions catch (e) {
+      return left(Failure(message: e.message));
+    }
+  }
 }

@@ -41,7 +41,11 @@ import 'package:repair_shop/features/users/data/repository/user_repository_impl.
 import 'package:repair_shop/features/users/domain/repository/user_repository.dart';
 import 'package:repair_shop/features/users/domain/usecases/create_new_user.dart';
 import 'package:repair_shop/features/users/domain/usecases/delete_user.dart';
+import 'package:repair_shop/features/users/domain/usecases/get_all_cached_users.dart';
 import 'package:repair_shop/features/users/domain/usecases/get_all_users.dart';
+import 'package:repair_shop/features/users/domain/usecases/sign_out_all_user.dart';
+import 'package:repair_shop/features/users/domain/usecases/sign_out_current_user.dart';
+import 'package:repair_shop/features/users/domain/usecases/switch_user_account.dart';
 import 'package:repair_shop/features/users/domain/usecases/update_user.dart';
 import 'package:repair_shop/features/users/presentation/bloc/user_bloc.dart';
 import 'package:sqflite/sqflite.dart';
@@ -176,12 +180,24 @@ void _initUsers() {
     ..registerFactory(() => CreateNewUser(userRepository: serviceLocator()))
     ..registerFactory(() => UpdateUser(userRepository: serviceLocator()))
     ..registerFactory(() => DeleteUser(userRepository: serviceLocator()))
+    ..registerFactory(() => GetAllCachedUsers(userRepository: serviceLocator()))
+    ..registerFactory(() => SwitchUserAccount(userRepository: serviceLocator()))
+    ..registerFactory(
+      () => SignOutCurrentUser(userRepository: serviceLocator()),
+    )
+    ..registerFactory(() => SignOutAllUser(userRepository: serviceLocator()))
     ..registerLazySingleton(
       () => UserBloc(
         getAllUsers: serviceLocator(),
         createNewUser: serviceLocator(),
         updateUser: serviceLocator(),
         deleteUser: serviceLocator(),
+        getAllCachedUsers: serviceLocator(),
+        switchUserAccount: serviceLocator(),
+        signOutCurrentUser: serviceLocator(),
+        signOutAllUser: serviceLocator(),
+        spService: serviceLocator(),
+        appWideUserCubit: serviceLocator(),
       ),
     );
 }

@@ -35,3 +35,7 @@ final class AuthFcmSyncToken extends AuthEvent {
 
   const AuthFcmSyncToken({required this.fcmToken});
 }
+
+final class AuthResetEvent extends AuthEvent {
+  const AuthResetEvent();
+}

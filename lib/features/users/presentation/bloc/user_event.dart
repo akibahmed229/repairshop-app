@@ -44,3 +44,23 @@ final class DeleteUserEvent extends UserEvent {
 
   const DeleteUserEvent({required this.id});
 }
+
+final class GetAllCachedUsersEvent extends UserEvent {
+  const GetAllCachedUsersEvent();
+}
+
+final class SwitchUserAccountEvent extends UserEvent {
+  final String id;
+
+  const SwitchUserAccountEvent({required this.id});
+}
+
+final class SignOutCurrentUserEvent extends UserEvent {
+  final String id;
+
+  const SignOutCurrentUserEvent({required this.id});
+}
+
+final class SignOutAllUserEvent extends UserEvent {
+  const SignOutAllUserEvent();
+}

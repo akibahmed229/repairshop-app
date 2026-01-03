@@ -29,6 +29,11 @@ abstract interface class UserRemoteDataSource {
   });
 
   Future<String> deleteUser({required String id, required String? token});
+
+  Future<UserModel> addAccount({
+    required String email,
+    required String password,
+  });
 }
 
 class UserRemoteDataSourceImpl implements UserRemoteDataSource {
@@ -147,6 +152,30 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       return jsonDecode(response.body);
     } catch (e) {
       throw OtherExecptions("Failed to delete user: ${e.toString()}");
+    }
+  }
+
+  @override
+  Future<UserModel> addAccount({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse('${AppSecrets.backendUri}/api/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({"email": email, "password": password}),
+      );
+
+      final Map<String, dynamic> data = jsonDecode(res.body);
+
+      if (res.statusCode != 200) {
+        throw data['message'] ?? 'Unknown login error';
+      }
+
+      return UserModel.formJson(data).copyWith(token: data['token']);
+    } catch (e) {
+      throw ServerExecptions("Failed to add user: ${e.toString()}");
     }
   }
 }

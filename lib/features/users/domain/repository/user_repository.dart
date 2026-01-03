@@ -21,4 +21,12 @@ abstract interface class UserRepository {
   });
 
   Future<Either<Failure, String>> deleteUser({required String id});
+
+  Future<Either<Failure, List<UserEntities>>> getAllCachedUsers();
+
+  Future<Either<Failure, UserEntities>> switchAccount({required String id});
+
+  Future<Either<Failure, UserEntities>> signOutUser({required String id});
+
+  Future<Either<Failure, bool>> signOutAllUser();
 }

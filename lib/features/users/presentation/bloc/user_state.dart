@@ -42,3 +42,28 @@ final class DeleteUserSuccessState extends UserState {
 
   const DeleteUserSuccessState(this.message);
 }
+
+final class GetAllCachedUsersSuccessState extends UserState {
+  final List<UserEntities> users;
+  final String activeUserId; // To know which checkmark to show
+
+  const GetAllCachedUsersSuccessState(this.users, this.activeUserId);
+}
+
+final class SwitchUserAccountSuccessState extends UserState {
+  final UserEntities user;
+
+  const SwitchUserAccountSuccessState(this.user);
+}
+
+final class SignOutCurrentAccountSuccessState extends UserState {
+  final UserEntities user;
+
+  const SignOutCurrentAccountSuccessState(this.user);
+}
+
+final class SignOutAllAccountSuccessState extends UserState {
+  final bool isSuccess;
+
+  const SignOutAllAccountSuccessState(this.isSuccess);
+}

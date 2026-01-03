@@ -31,11 +31,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
        _syncFcmDeviceToken = syncFcmDeviceToken,
        _appWideUserCubit = appWideUserCubit,
        super(AuthInitial()) {
-    on<AuthEvent>((_, emit) => emit(AuthLoading()));
+    on<AuthEvent>((event, emit) {
+      if (event is! AuthResetEvent) {
+        emit(AuthLoading());
+      }
+    });
     on<AuthSignUpEvent>(_onAuthSignUpEvent);
     on<AuthLogInEvent>(_onAuthLogInEvent);
     on<AuthIsUserLoggedInEvent>(_onAuthIsUserLoggedInEvent);
     on<AuthFcmSyncToken>(_onAuthFcmSyncToken);
+    on<AuthResetEvent>((event, emit) => emit(AuthInitial()));
   }
 
   void _onAuthSignUpEvent(

@@ -8,6 +8,7 @@ import 'package:repair_shop/core/utils/show_snackbar.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:repair_shop/features/auth/presentation/pages/signup_page.dart';
 import 'package:repair_shop/features/techNotes/presentation/pages/tech_note_page.dart';
+import 'package:repair_shop/features/users/presentation/bloc/user_bloc.dart';
 
 class LoginPage extends StatefulWidget {
   // Static method to create a route for the SignupPage
@@ -48,6 +49,9 @@ class _LoginPageState extends State<LoginPage> {
               } else if (state is AuthSuccess) {
                 _emailController.clear();
                 _passwordController.clear();
+
+                // IMPORTANT: Tell UserBloc to refresh the local list of accounts
+                context.read<UserBloc>().add(const GetAllCachedUsersEvent());
 
                 Navigator.pushAndRemoveUntil(
                   context,

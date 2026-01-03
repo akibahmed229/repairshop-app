@@ -10,6 +10,7 @@ class UserModel extends UserEntities {
     super.active,
     super.createdAt,
     super.updatedAt,
+    super.token,
   });
 
   factory UserModel.formJson(Map<String, dynamic> map) {
@@ -23,6 +24,28 @@ class UserModel extends UserEntities {
       active: map['active'] == 1 || map['active'] == true,
       createdAt: DateTime.parse(map['createdAt']),
       updatedAt: DateTime.parse(map['updatedAt']),
+    );
+  }
+
+  UserModel copyWith({
+    String? id,
+    String? name,
+    String? email,
+    List<String>? roles,
+    bool? active,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? token,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      roles: roles ?? this.roles,
+      active: active ?? this.active,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      token: token ?? this.token,
     );
   }
 

@@ -6,7 +6,6 @@ import 'package:repair_shop/core/common/widgets/loader.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/core/utils/show_snackbar.dart';
 import 'package:repair_shop/features/users/presentation/bloc/user_bloc.dart';
-import 'package:repair_shop/features/users/presentation/pages/view_user_setting_page.dart';
 
 class EditUserPage extends StatefulWidget {
   static route(UserEntities user) =>
