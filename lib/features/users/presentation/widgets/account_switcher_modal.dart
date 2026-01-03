@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:repair_shop/core/common/cubits/app_wide_user/app_wide_user_cubit.dart';
@@ -7,6 +5,7 @@ import 'package:repair_shop/core/common/entities/user_entities.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:repair_shop/features/auth/presentation/pages/login_page.dart';
+import 'package:repair_shop/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
 import 'package:repair_shop/features/users/presentation/bloc/user_bloc.dart';
 
@@ -37,7 +36,7 @@ class _AccountSwitcherModalState extends State<AccountSwitcherModal> {
           Navigator.pop(context);
 
           // refersh ui
-          context.read<TechNoteBloc>().add(TechNotesSyncEvent());
+          context.read<NotificationBloc>().add(FetchNotificationsEvent());
           context.read<TechNoteBloc>().add(TechNotesGetEvent());
           context.read<TechNoteBloc>().add(TechNotesGetAllUsersEvent());
         }
@@ -116,7 +115,11 @@ class _AccountSwitcherModalState extends State<AccountSwitcherModal> {
                     Navigator.pop(context);
                     context.read<AuthBloc>().add(AuthResetEvent());
                     context.read<UserBloc>().add(SignOutAllUserEvent());
-                    Navigator.pushAndRemoveUntil(context, LoginPage.route(), (_)=> false);
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      LoginPage.route(),
+                      (_) => false,
+                    );
                   },
                 ),
             ],

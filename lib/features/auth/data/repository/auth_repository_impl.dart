@@ -50,12 +50,19 @@ class AuthRepositoryImpl implements AuthRepository {
       if (await connectionChecker.isConnected) {
         // check if user already exist in local db
         final token = await spService.getToken();
-        final userCheck = await authLocalDataSource.getCachedUserByToken(
-          token!,
-        );
 
-        if (userCheck?.email == email) {
-          return left(Failure(message: "User already exist"));
+        if (token != null && token.isNotEmpty) {
+          final userCheck = await authLocalDataSource.getCachedUserByToken(
+            token,
+          );
+
+          if (userCheck != null) {
+            if (userCheck.email == email) {
+              return left(
+                Failure(message: "User already logged in with this account"),
+              );
+            }
+          }
         }
 
         final user = await authRemoteDataSource.logInWithEmailPassword(
