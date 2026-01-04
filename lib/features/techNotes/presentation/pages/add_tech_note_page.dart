@@ -21,7 +21,7 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
   final _contentController = TextEditingController();
 
   // 1. Make this state depend on the Bloc state, remove the cached list
-  String? _assignedTo;
+  String? _assignedTo = '';
 
   // 2. Local variables to hold data retrieved from the LAST success state
   List<UserEntities> _availableUsers = [];
@@ -192,7 +192,7 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
                   const SizedBox(height: 5),
                   MyDropDownMenu(
                     // Now safely use ! because 'hasUsers' check guarantees non-null
-                    value: _assignedTo!,
+                    value: hasUsers ? _availableUsers.first.name : _assignedTo!,
                     onChanged: (value) {
                       setState(() {
                         _assignedTo = value;

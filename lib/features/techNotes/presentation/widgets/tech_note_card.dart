@@ -19,125 +19,201 @@ class TechNoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Define status colors
+    final statusColor = note.completed
+        ? Colors.greenAccent
+        : Colors.orangeAccent;
+    final statusIcon = note.completed ? Icons.check_circle : Icons.pending;
+    final statusText = note.completed ? "Completed" : "Open";
+
     return Card(
       margin: isGridView
           ? EdgeInsets.zero
-          : const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      elevation: 3,
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(20),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                note.title,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-                maxLines: 1, // Keeps the card height consistent
-                overflow:
-                    TextOverflow.ellipsis, // Adds "..." if text is too long
-              ),
-            ),
-            IconButton(
-              // Added padding to separate button from text slightly
-              padding: const EdgeInsets.only(left: 8),
-              constraints:
-                  const BoxConstraints(), // Removes default minimum size constraints
-              onPressed: () {
-                Navigator.push(context, EditTechNotePage.route(note, users));
-              },
-              icon: CircleAvatar(
-                backgroundColor: AppPallete.borderColor.withValues(alpha: 0.5),
-                child: const Icon(Icons.edit_rounded),
-              ),
-            ),
-          ],
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(
-              height: 8,
-            ), // Added slight spacing between title and subtitle
-            Row(
-              children: [
-                Icon(
-                  note.completed ? Icons.done_rounded : Icons.pending_actions,
-                  size: 20, // Adjusted size to fit better
-                ),
-                const SizedBox(width: 6),
-                if (!isGridView)
-                  const Text(
-                    "Status: ",
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-
-                Text(
-                  note.completed ? "Completed" : "Opened",
-                  style: TextStyle(
-                    color: note.completed ? Colors.green : Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                const Icon(Icons.person, size: 20),
-                const SizedBox(width: 6),
-                if (!isGridView)
-                  const Text(
-                    "Owner: ",
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-
-                Expanded(
-                  // Added Expanded here too just in case username is huge
-                  child: Text(
-                    "${note.userEmail}",
-                    style: const TextStyle(color: Colors.greenAccent),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            // --- DYNAMIC DATETIME SECTION ---
-            if (isGridView)
-              // GRID: Stack them vertically to prevent overflow
-              Column(
+          : const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 0, // Minimalist flat look
+      color: AppPallete.borderColor.withValues(alpha: 0.1),
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: AppPallete.borderColor.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(context, EditTechNotePage.route(note, users));
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // --- HEADER: TITLE & EDIT ---
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildDateItem(Icons.event_note, note.createdAt),
-                  const SizedBox(height: 4),
-                  _buildDateItem(Icons.history_toggle_off, note.updatedAt),
-                ],
-              )
-            else
-              // LIST: Keep them side-by-side
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildDateItem(Icons.event_note, note.createdAt),
-                  _buildDateItem(Icons.history_toggle_off, note.updatedAt),
+                  Expanded(
+                    child: Text(
+                      note.title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        height: 1.2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Minimalist Edit Button
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      EditTechNotePage.route(note, users),
+                    ),
+                    child: Icon(
+                      Icons.edit_note_rounded,
+                      size: 24,
+                      color: AppPallete.whiteColor.withValues(alpha: 0.7),
+                    ),
+                  ),
                 ],
               ),
-          ],
+
+              const SizedBox(height: 12),
+
+              // --- BODY: STATUS & OWNER ---
+              // --- BODY: STATUS & OWNER ---
+              Column(
+                spacing: 8, // Slightly reduced spacing for better fit
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Status Pill
+                  Row(
+                    children: [
+                      if (!isGridView) const Text("Status: "),
+                      const SizedBox(width: 4),
+                      _buildPill(statusColor, statusText, statusIcon),
+                    ],
+                  ),
+
+                  // Owner Info
+                  Row(
+                    children: [
+                      if (!isGridView) const Text("Owner: "),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        fit: FlexFit
+                            .loose, // This tells the pill: "Take only the space you need"
+                        child: _buildPill(
+                          Colors
+                              .blueAccent, // Highlight Color: Professional Blue
+                          note.userEmail!,
+                          Icons.alternate_email_rounded,
+                          isEmail: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              // Only use Spacer in GridView because Grid tiles have fixed height.
+              // In ListView, the card wraps content, so Spacer() causes a crash.
+              if (isGridView) const Spacer() else const SizedBox(height: 20),
+              const Divider(height: 1, thickness: 0.2),
+              const SizedBox(height: 8),
+
+              // --- FOOTER: DATES ---
+              // Logic: In Grid, space is tight, keep minimal. In List, spread out.
+              DefaultTextStyle(
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[500],
+                  letterSpacing: 0.3,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildDateItem(
+                      Icons.calendar_today_rounded,
+                      note.createdAt,
+                    ),
+                    if (!isGridView) ...[
+                      // Only show "Updated" label in List view if you want,
+                      // or show the icon logic below for both:
+                      _buildDateItem(
+                        Icons.update_rounded,
+                        note.updatedAt,
+                        isRight: true,
+                      ),
+                    ] else
+                      // In Grid, just show the update icon to save space
+                      Icon(
+                        Icons.update_rounded,
+                        size: 14,
+                        color: Colors.grey[600],
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // Helper widget to keep the date code clean
-  Widget _buildDateItem(IconData icon, DateTime date) {
+  Widget _buildDateItem(IconData icon, DateTime date, {bool isRight = false}) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16),
-        const SizedBox(width: 5),
-        Text(formatDateByMMMYYYY(date), style: const TextStyle(fontSize: 12)),
+        if (isRight) ...[
+          Text(formatDateByMMMYYYY(date)),
+          const SizedBox(width: 4),
+          Icon(icon, size: 12, color: Colors.grey[600]),
+        ] else ...[
+          Icon(icon, size: 12, color: Colors.grey[600]),
+          const SizedBox(width: 4),
+          Text(formatDateByMMMYYYY(date)),
+        ],
       ],
+    );
+  }
+
+  Widget _buildPill(
+    Color color,
+    String text,
+    IconData icon, {
+    bool isEmail = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        // Using a slightly stronger background for the email highlight
+        color: color.withValues(alpha: isEmail ? 0.15 : 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
+          Flexible(
+            // Added Flexible here to prevent the internal Row from overflowing
+            child: Text(
+              text,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: isEmail ? FontWeight.w600 : FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

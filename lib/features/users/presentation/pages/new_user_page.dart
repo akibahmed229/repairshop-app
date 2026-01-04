@@ -81,109 +81,95 @@ class _NewUserPageState extends State<NewUserPage> {
             return const Loader();
           }
 
-          return Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(35.0),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title from the image
-                    SizedBox(
-                      width: double.infinity,
-                      child: const Text(
-                        'Add New User',
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Form(
+              key: formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title from the image
+                  SizedBox(
+                    width: double.infinity,
+                    child: const Text(
+                      'Add New User',
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 20),
+                  ),
+                  const SizedBox(height: 20),
 
-                    // Username Input Field
-                    const Text(
-                      'Username: [3-20 letters]',
-                      style: TextStyle(color: AppPallete.whiteColor),
-                    ),
-                    const SizedBox(height: 5),
-                    AuthField(
-                      controller: usernameController,
-                      hintText: 'Enter username',
-                    ),
-                    const SizedBox(height: 20),
+                  // Username Input Field
+                  const Text(
+                    'Username: [3-20 letters]',
+                    style: TextStyle(color: AppPallete.whiteColor),
+                  ),
+                  const SizedBox(height: 5),
+                  AuthField(
+                    controller: usernameController,
+                    hintText: 'Enter username',
+                  ),
+                  const SizedBox(height: 20),
 
-                    // Email Input Field
-                    const Text(
-                      'Email: [@gmail.com]',
-                      style: TextStyle(color: AppPallete.whiteColor),
-                    ),
-                    const SizedBox(height: 5),
-                    AuthField(
-                      controller: useremailController,
-                      hintText: 'Enter user email',
-                    ),
-                    const SizedBox(height: 20),
+                  // Email Input Field
+                  const Text(
+                    'Email: [@gmail.com]',
+                    style: TextStyle(color: AppPallete.whiteColor),
+                  ),
+                  const SizedBox(height: 5),
+                  AuthField(
+                    controller: useremailController,
+                    hintText: 'Enter user email',
+                  ),
+                  const SizedBox(height: 20),
 
-                    // Password Input Field
-                    const Text(
-                      'Password: [4-12 chars incl. !@#\$%]',
-                      style: TextStyle(color: AppPallete.whiteColor),
-                    ),
-                    const SizedBox(height: 5),
-                    AuthField(
-                      controller: passwordController,
-                      hintText: 'Enter password',
-                    ),
-                    const SizedBox(height: 20),
+                  // Password Input Field
+                  const Text(
+                    'Password: [4-12 chars incl. !@#\$%]',
+                    style: TextStyle(color: AppPallete.whiteColor),
+                  ),
+                  const SizedBox(height: 5),
+                  AuthField(
+                    controller: passwordController,
+                    hintText: 'Enter password',
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 20),
 
-                    // Role Selection
-                    const Text(
-                      'User Role:', // Changed from 'Username' label in image for clarity
-                      style: TextStyle(color: AppPallete.whiteColor),
-                    ),
-                    const SizedBox(height: 5),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppPallete
-                            .backgroundColor, // Use a contrasting background
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppPallete.borderColor),
-                      ),
+                  // Role Selection
+                  const Text(
+                    'User Role:', // Changed from 'Username' label in image for clarity
+                    style: TextStyle(color: AppPallete.whiteColor),
+                  ),
+                  const SizedBox(height: 5),
+                  MyDropDownMenu(
+                    value: selectedRole!,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedRole = newValue;
+                      });
+                    },
+                    items: userRoles.map<DropdownMenuItem<String>>((
+                      String role,
+                    ) {
+                      return DropdownMenuItem<String>(
+                        value: role,
+                        child: Text(role),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 35),
 
-                      child: MyDropDownMenu(
-                        value: selectedRole!,
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            selectedRole = newValue;
-                          });
-                        },
-                        items: userRoles.map<DropdownMenuItem<String>>((
-                          String role,
-                        ) {
-                          return DropdownMenuItem<String>(
-                            value: role,
-                            child: Text(role),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                    const SizedBox(height: 35),
-
-                    // Sign Up Button (Assumed to be AuthGradientButton)
-                    // Note: AuthGradientButton is not defined here, using standard ElevatedButton
-                    AuthGradientButton(
-                      buttonText: 'CREATE USER',
-                      onPressed: _createUser,
-                    ),
-                  ],
-                ),
+                  // Sign Up Button (Assumed to be AuthGradientButton)
+                  // Note: AuthGradientButton is not defined here, using standard ElevatedButton
+                  AuthGradientButton(
+                    buttonText: 'CREATE USER',
+                    onPressed: _createUser,
+                  ),
+                ],
               ),
             ),
           );

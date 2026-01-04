@@ -15,15 +15,24 @@ class MyDropDownMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonHideUnderline(
-      child: DropdownButton<String>(
-        value: value,
-        isExpanded: true,
-        dropdownColor: AppPallete.backgroundColor,
-        style: const TextStyle(color: AppPallete.whiteColor, fontSize: 16),
-        icon: const Icon(Icons.arrow_drop_down, color: AppPallete.whiteColor),
-        onChanged: onChanged,
-        items: items,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppPallete.backgroundColor, // Use a contrasting background
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppPallete.borderColor),
+      ),
+
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          isExpanded: true,
+          dropdownColor: AppPallete.backgroundColor,
+          style: const TextStyle(color: AppPallete.whiteColor, fontSize: 16),
+          icon: const Icon(Icons.arrow_drop_down, color: AppPallete.whiteColor),
+          onChanged: onChanged,
+          items: items,
+        ),
       ),
     );
   }

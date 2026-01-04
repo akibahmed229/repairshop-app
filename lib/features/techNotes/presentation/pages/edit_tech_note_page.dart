@@ -140,6 +140,14 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
             return const Center(child: Text("Loading users..."));
           }
 
+          // Build the Form (We are now guaranteed to have _assignedTo and _availableUsers)
+          final List<DropdownMenuItem<String>> userItems = _users.map((email) {
+            return DropdownMenuItem(
+              value: email,
+              child: Text(email, style: const TextStyle(fontSize: 14)),
+            );
+          }).toList();
+
           return Padding(
             padding: EdgeInsetsGeometry.all(20),
             child: Form(
@@ -219,15 +227,7 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
                         setState(() => _assignedTo = value);
                       }
                     },
-                    items: _users.map((email) {
-                      return DropdownMenuItem(
-                        value: email,
-                        child: Text(
-                          email,
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      );
-                    }).toList(),
+                    items: userItems,
                   ),
                   const SizedBox(height: 20),
 

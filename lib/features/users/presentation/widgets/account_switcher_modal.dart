@@ -52,6 +52,11 @@ class _AccountSwitcherModalState extends State<AccountSwitcherModal> {
           // Tell the app there is NO user logged in
           context.read<AppWideUserCubit>().updateUser(null);
           Navigator.pop(context);
+          Navigator.pushAndRemoveUntil(
+            context,
+            LoginPage.route(),
+            (_) => false,
+          );
         }
       },
       builder: (context, state) {
@@ -112,14 +117,8 @@ class _AccountSwitcherModalState extends State<AccountSwitcherModal> {
                   label: "Sign out all accounts",
                   isDestructive: true,
                   onTap: () {
-                    Navigator.pop(context);
                     context.read<AuthBloc>().add(AuthResetEvent());
                     context.read<UserBloc>().add(SignOutAllUserEvent());
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      LoginPage.route(),
-                      (_) => false,
-                    );
                   },
                 ),
             ],
