@@ -4,9 +4,11 @@ import 'package:repair_shop/core/common/cubits/app_wide_user/app_wide_user_cubit
 import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/core/utils/format_date.dart';
 import 'package:repair_shop/features/users/presentation/bloc/user_bloc.dart';
+import 'package:repair_shop/features/users/presentation/pages/about_page.dart';
 import 'package:repair_shop/features/users/presentation/pages/new_user_page.dart';
 import 'package:repair_shop/features/users/presentation/pages/view_user_setting_page.dart';
 import 'package:repair_shop/features/users/presentation/widgets/account_switcher_modal.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UserPage extends StatelessWidget {
   static route() => MaterialPageRoute(builder: (context) => const UserPage());
@@ -83,24 +85,15 @@ class UserPage extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 25),
-                  const Divider(color: AppPallete.borderColor, thickness: 0.5),
-                  const SizedBox(height: 20),
-
                   // 2. Admin Controls Section
                   if (isAdmin) ...[
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0, bottom: 15),
-                      child: Text(
-                        "ADMIN CONTROLS",
-                        style: TextStyle(
-                          color: AppPallete.greyColor.withValues(alpha: 0.6),
-                          fontSize: 12,
-                          letterSpacing: 1.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    const SizedBox(height: 25),
+                    const Divider(
+                      color: AppPallete.borderColor,
+                      thickness: 0.5,
                     ),
+                    const SizedBox(height: 20),
+                    _buildMenuHeading("ADMIN CONTROLS"),
                     _buildMenuItem(
                       context,
                       title: 'View Users Setting',
@@ -119,6 +112,51 @@ class UserPage extends StatelessWidget {
                       },
                     ),
                   ],
+
+                  // 2. Info Controls Section
+                  const SizedBox(height: 25),
+                  const Divider(color: AppPallete.borderColor, thickness: 0.5),
+                  const SizedBox(height: 20),
+
+                  _buildMenuHeading("MORE"),
+                  _buildMenuItem(
+                    context,
+                    title: 'About us',
+                    icon: Icons.info_outline_rounded,
+                    onTap: () {
+                      Navigator.of(context).push(AboutPage.route());
+                    },
+                  ),
+                  _buildMenuItem(
+                    context,
+                    title: 'Help & Feedback',
+                    icon: Icons.help_outline_sharp,
+                    onTap: () async {
+                      final Uri emailLaunchUri = Uri(
+                        scheme: 'mailto',
+                        path:
+                            'ahmed15-5827@diu.edu.bd', // Replace with your support email
+                        queryParameters: {
+                          'subject': 'Help & Feedback - Repair Shop App',
+                          'body':
+                              'Hi Support Team,\n\nI have the following feedback: ',
+                        },
+                      );
+
+                      if (await canLaunchUrl(emailLaunchUri)) {
+                        await launchUrl(emailLaunchUri);
+                      } else {
+                        // Handle the error (e.g., no email app installed)
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Could not open email app'),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                  ),
                 ],
               ),
             );
@@ -237,6 +275,21 @@ class UserPage extends StatelessWidget {
             }).toList(),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMenuHeading(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0, bottom: 15),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: AppPallete.whiteColor.withValues(alpha: 0.6),
+          fontSize: 12,
+          letterSpacing: 1.5,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

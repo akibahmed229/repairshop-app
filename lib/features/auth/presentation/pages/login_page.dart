@@ -103,29 +103,29 @@ class _LoginPageState extends State<LoginPage> {
                       },
                     ),
                     const SizedBox(height: 20),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(context, SignupPage.route());
-                      },
-                      child: RichText(
-                        text: TextSpan(
-                          text: 'Dont\'t have an account? ',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: ' Sign Up',
-                              style: const TextStyle(
-                                color: AppPallete.gradient2,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     Navigator.push(context, SignupPage.route());
+                    //   },
+                    //   child: RichText(
+                    //     text: TextSpan(
+                    //       text: 'Dont\'t have an account? ',
+                    //       style: const TextStyle(
+                    //         color: Colors.white,
+                    //         fontSize: 16,
+                    //       ),
+                    //       children: [
+                    //         TextSpan(
+                    //           text: ' Sign Up',
+                    //           style: const TextStyle(
+                    //             color: AppPallete.gradient2,
+                    //             fontWeight: FontWeight.bold,
+                    //           ),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               );
