@@ -31,21 +31,22 @@ class _AccountSwitcherModalState extends State<AccountSwitcherModal> {
     return BlocConsumer<UserBloc, UserState>(
       listener: (context, state) {
         if (state is SwitchUserAccountSuccessState) {
-          // IMPORTANT: Update the global user so TechNotePage refreshes data
-          context.read<AppWideUserCubit>().updateUser(state.user);
-          Navigator.pop(context);
-
           // refersh ui
           context.read<NotificationBloc>().add(FetchNotificationsEvent());
           context.read<TechNoteBloc>().add(TechNotesGetEvent());
           context.read<TechNoteBloc>().add(TechNotesGetAllUsersEvent());
+
+          // IMPORTANT: Update the global user so TechNotePage refreshes data
+          context.read<AppWideUserCubit>().updateUser(state.user);
+          Navigator.pop(context);
         }
 
         if (state is SignOutCurrentAccountSuccessState) {
-          // Update the global user to the 'next' available user returned by the bloc
-          context.read<AppWideUserCubit>().updateUser(state.user);
           // Refresh the list in the modal
           context.read<UserBloc>().add(const GetAllCachedUsersEvent());
+
+          // Update the global user to the 'next' available user returned by the bloc
+          context.read<AppWideUserCubit>().updateUser(state.user);
         }
 
         if (state is SignOutAllAccountSuccessState) {
