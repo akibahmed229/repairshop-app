@@ -9,6 +9,7 @@ import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.
 import 'package:repair_shop/features/techNotes/presentation/widgets/tech_note_editor.dart';
 
 class AddTechNotePage extends StatefulWidget {
+  static route() => MaterialPageRoute(builder: (context) => AddTechNotePage());
   const AddTechNotePage({super.key});
 
   @override
@@ -29,7 +30,7 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
   @override
   void initState() {
     super.initState();
-    // Fetch users immediately
+    context.read<TechNoteBloc>().add(TechNotesGetAllUsersEvent());
   }
 
   @override

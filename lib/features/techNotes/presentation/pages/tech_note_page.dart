@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart';
-import 'package:repair_shop/features/techNotes/presentation/pages/add_tech_note_page.dart';
+import 'package:repair_shop/features/chat/presentation/pages/message_page.dart';
 import 'package:repair_shop/features/techNotes/presentation/pages/view_tech_note_page.dart';
 import 'package:repair_shop/features/users/presentation/pages/user_page.dart';
 
@@ -19,7 +19,7 @@ class _TechNotePageState extends State<TechNotePage> {
   int _selectedIndex = 1;
 
   static const List<Widget> _pages = <Widget>[
-    AddTechNotePage(),
+    MessagePage(),
     ViewTechNotePage(),
     UserPage(),
   ];
@@ -61,7 +61,7 @@ class _TechNotePageState extends State<TechNotePage> {
             ),
             activeColor: AppPallete.gradient3,
             tabs: const [
-              GButton(icon: Icons.note_add_rounded, text: 'Add Notes'),
+              GButton(icon: Icons.message_rounded, text: 'Chat'),
               GButton(icon: Icons.sticky_note_2_rounded, text: 'TechNotes'),
               GButton(icon: Icons.settings_rounded, text: 'Setting'),
             ],

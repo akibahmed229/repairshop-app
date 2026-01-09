@@ -7,15 +7,9 @@ import 'package:repair_shop/features/techNotes/presentation/pages/edit_tech_note
 
 class TechNoteCard extends StatelessWidget {
   final TechNoteEntities note;
-  final List<UserEntities> users;
   final bool isGridView;
 
-  const TechNoteCard({
-    super.key,
-    required this.note,
-    required this.users,
-    required this.isGridView,
-  });
+  const TechNoteCard({super.key, required this.note, required this.isGridView});
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +33,7 @@ class TechNoteCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          Navigator.push(context, EditTechNotePage.route(note, users));
+          Navigator.push(context, EditTechNotePage.route(note));
         },
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -66,10 +60,8 @@ class TechNoteCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   // Minimalist Edit Button
                   GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      EditTechNotePage.route(note, users),
-                    ),
+                    onTap: () =>
+                        Navigator.push(context, EditTechNotePage.route(note)),
                     child: Icon(
                       Icons.edit_note_rounded,
                       size: 24,

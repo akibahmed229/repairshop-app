@@ -11,15 +11,12 @@ import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.
 import 'package:repair_shop/features/techNotes/presentation/widgets/tech_note_editor.dart';
 
 class EditTechNotePage extends StatefulWidget {
-  static route(TechNoteEntities note, List<UserEntities> users) =>
-      MaterialPageRoute(
-        builder: (context) => EditTechNotePage(note: note, users: users),
-      );
+  static route(TechNoteEntities note) =>
+      MaterialPageRoute(builder: (context) => EditTechNotePage(note: note));
 
   final TechNoteEntities note;
-  final List<UserEntities> users;
 
-  const EditTechNotePage({super.key, required this.note, required this.users});
+  const EditTechNotePage({super.key, required this.note});
 
   @override
   State<EditTechNotePage> createState() => _EditTechNotePageState();
@@ -41,9 +38,7 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
     _titleController = TextEditingController(text: widget.note.title);
     _contentController = TextEditingController(text: widget.note.content);
     _completed = widget.note.completed;
-
-    // FIX: Populate the local lists immediately from the passed widget data
-    _populateUsers(widget.users);
+    context.read<TechNoteBloc>().add(TechNotesGetAllUsersEvent());
   }
 
   @override

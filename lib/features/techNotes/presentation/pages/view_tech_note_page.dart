@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:repair_shop/core/common/entities/user_entities.dart';
 import 'package:repair_shop/core/common/widgets/loader.dart';
+import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/core/utils/show_snackbar.dart';
 import 'package:repair_shop/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:repair_shop/features/notifications/presentation/widgets/notification_bell.dart';
 import 'package:repair_shop/features/techNotes/domain/entities/tech_note_entities.dart';
 import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
+import 'package:repair_shop/features/techNotes/presentation/pages/add_tech_note_page.dart';
 import 'package:repair_shop/features/techNotes/presentation/widgets/tech_note_card.dart';
 
 class ViewTechNotePage extends StatefulWidget {
@@ -21,7 +22,6 @@ class ViewTechNotePage extends StatefulWidget {
 class _ViewTechNotePageState extends State<ViewTechNotePage> {
   int noteCount = 0;
   List<TechNoteEntities> notes = [];
-  List<UserEntities> users = [];
   bool isGridView = false;
 
   @override
@@ -29,7 +29,6 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
     super.initState();
     context.read<TechNoteBloc>().add(TechNotesSyncEvent());
     context.read<TechNoteBloc>().add(TechNotesGetEvent());
-    context.read<TechNoteBloc>().add(TechNotesGetAllUsersEvent());
   }
 
   @override
@@ -70,10 +69,6 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
             notes = state.notes;
           }
 
-          if (state is TechNotesGetAllUsersSuccess) {
-            users = state.users;
-          }
-
           // Default widget when no condition matches
           return RefreshIndicator(
             onRefresh: () async {
@@ -82,7 +77,6 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
 
               // Sync and Fetch TechNotes
               techNoteBloc.add(TechNotesSyncEvent());
-              techNoteBloc.add(TechNotesGetAllUsersEvent());
 
               // 2. REFRESH NOTIFICATIONS
               // This will trigger the NotificationBell to rebuild automatically
@@ -101,6 +95,13 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
           );
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, AddTechNotePage.route());
+        },
+        backgroundColor: AppPallete.borderColor.withValues(alpha: 0.5),
+        child: const Icon(Icons.note_add_outlined, color: AppPallete.gradient2),
+      ),
     );
   }
 
@@ -108,11 +109,8 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
   Widget _buildListView() {
     return ListView.builder(
       itemCount: notes.length,
-      itemBuilder: (context, index) => TechNoteCard(
-        note: notes[index],
-        users: users,
-        isGridView: isGridView,
-      ),
+      itemBuilder: (context, index) =>
+          TechNoteCard(note: notes[index], isGridView: isGridView),
     );
   }
 
@@ -127,11 +125,8 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
         mainAxisSpacing: 8,
       ),
       itemCount: notes.length,
-      itemBuilder: (context, index) => TechNoteCard(
-        note: notes[index],
-        users: users,
-        isGridView: isGridView,
-      ),
+      itemBuilder: (context, index) =>
+          TechNoteCard(note: notes[index], isGridView: isGridView),
     );
   }
 }
