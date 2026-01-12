@@ -28,7 +28,6 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
   void initState() {
     super.initState();
     context.read<TechNoteBloc>().add(TechNotesSyncEvent());
-    context.read<TechNoteBloc>().add(TechNotesGetEvent());
   }
 
   @override
@@ -55,9 +54,6 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
           if (state is TechNoteFailure) {
             showSnackBar(context, state.message);
           }
-          if (state is TechNotesSyncSuccess) {
-            context.read<TechNoteBloc>().add(TechNotesGetEvent());
-          }
         },
         builder: (context, state) {
           if (state is TechNoteLoading) {
@@ -81,7 +77,6 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
               // 2. REFRESH NOTIFICATIONS
               // This will trigger the NotificationBell to rebuild automatically
               notificationBloc.add(NotificationSyncEvent());
-              notificationBloc.add(FetchNotificationsEvent());
 
               // Wait for the reload to complete.
               // You might want to listen to state changes or

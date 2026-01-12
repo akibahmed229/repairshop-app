@@ -62,10 +62,12 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
   ) async {
     final res = await _syncAllTechNotes(NoParams());
 
-    res.fold(
-      (failure) => emit(TechNoteFailure(message: failure.message)),
-      ((isSynced) => emit(TechNotesSyncSuccess(isSynced))),
-    );
+    res.fold((failure) => emit(TechNoteFailure(message: failure.message)), (
+      isSynced,
+    ) {
+      add(TechNotesGetEvent());
+      emit(TechNotesSyncSuccess(isSynced));
+    });
   }
 
   void _onTechNoteCreateEvent(
