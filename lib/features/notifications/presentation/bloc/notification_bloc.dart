@@ -66,10 +66,12 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   ) async {
     final res = await _syncAllNotifications(NoParams());
 
-    res.fold(
-      (failure) => emit(NotificationFailure(message: failure.message)),
-      (isSynced) => emit(NotificationSyncSucess(isSynced)),
-    );
+    res.fold((failure) => emit(NotificationFailure(message: failure.message)), (
+      isSynced,
+    ) {
+      add(FetchNotificationsEvent());
+      emit(NotificationSyncSucess(isSynced));
+    });
   }
 
   void _onDeleteAllNotificationEvent(

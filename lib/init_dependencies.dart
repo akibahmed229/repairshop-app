@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:path/path.dart';
@@ -15,6 +17,19 @@ import 'package:repair_shop/features/auth/domain/usecases/sync_fcm_device_token.
 import 'package:repair_shop/features/auth/domain/usecases/user_log_in.dart';
 import 'package:repair_shop/features/auth/domain/usecases/user_sign_up.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:repair_shop/features/chat/data/datasources/chat_local_source.dart';
+import 'package:repair_shop/features/chat/data/datasources/chat_remote_data_source.dart';
+import 'package:repair_shop/features/chat/data/datasources/chat_socket_service.dart';
+import 'package:repair_shop/features/chat/data/repository/chat_repository_impl.dart';
+import 'package:repair_shop/features/chat/domain/repository/chat_repository.dart';
+import 'package:repair_shop/features/chat/domain/usecases/connect_chat_socket.dart';
+import 'package:repair_shop/features/chat/domain/usecases/delete_chat.dart';
+import 'package:repair_shop/features/chat/domain/usecases/disconnect_chat_socket.dart';
+import 'package:repair_shop/features/chat/domain/usecases/get_chat_history.dart';
+import 'package:repair_shop/features/chat/domain/usecases/get_message_stream.dart';
+import 'package:repair_shop/features/chat/domain/usecases/search_users.dart';
+import 'package:repair_shop/features/chat/domain/usecases/send_message.dart';
+import 'package:repair_shop/features/chat/presentation/bloc/chat_bloc.dart';
 import 'package:repair_shop/features/notifications/data/datasources/notification_local_data_source.dart';
 import 'package:repair_shop/features/notifications/data/datasources/notification_remote_data_source.dart';
 import 'package:repair_shop/features/notifications/data/repository/notification_repository_impl.dart';
@@ -79,10 +94,16 @@ Future<void> initDependencies() async {
   );
   serviceLocator.registerLazySingleton(() => db);
 
+  // message controller for stream of data pulling-pushing from socket.io
+  serviceLocator.registerLazySingleton(
+    () => StreamController<Map<String, dynamic>>.broadcast(),
+  );
+
   _initAuth();
   _initTechNote();
   _initUsers();
   _initNotifications();
+  _initMessages();
 }
 
 void _initAuth() {
@@ -124,7 +145,7 @@ void _initTechNote() {
     ..registerFactory<TechNoteLocalDataSource>(
       () => TechNoteLocalDataSourceImpl(database: serviceLocator()),
     )
-    ..registerFactory<TechNoteRepository>(
+    ..registerLazySingleton<TechNoteRepository>(
       () => TechNoteRepositoryImpl(
         techNoteRemoteDataSource: serviceLocator(),
         techNoteLocalDataSource: serviceLocator(),
@@ -210,7 +231,7 @@ void _initNotifications() {
     ..registerFactory<NotificationLocalDataSource>(
       () => NotificationLocalDataSourceImpl(database: serviceLocator()),
     )
-    ..registerFactory<NotificationRepository>(
+    ..registerLazySingleton<NotificationRepository>(
       () => NotificationRepositoryImpl(
         spService: serviceLocator(),
         connectionChecker: serviceLocator(),
@@ -236,6 +257,44 @@ void _initNotifications() {
         markNotificationAsRead: serviceLocator(),
         syncAllNotifications: serviceLocator(),
         deleteAllNotifications: serviceLocator(),
+      ),
+    );
+}
+
+void _initMessages() {
+  serviceLocator
+    ..registerFactory<ChatRemoteDataSource>(() => ChatRemoteDataSourceImpl())
+    ..registerFactory<ChatLocalSource>(
+      () => ChatLocalSourceImpl(database: serviceLocator()),
+    )
+    ..registerLazySingleton(
+      () => ChatSocketService(messageController: serviceLocator()),
+    )
+    ..registerLazySingleton<ChatRepository>(
+      () => ChatRepositoryImpl(
+        chatLocalSource: serviceLocator(),
+        chatRemoteDataSource: serviceLocator(),
+        socketService: serviceLocator(),
+        connectionChecker: serviceLocator(),
+        spService: serviceLocator(),
+      ),
+    )
+    ..registerFactory(() => ConnectChatSocket(serviceLocator()))
+    ..registerFactory(() => DisconnectChatSocket(serviceLocator()))
+    ..registerFactory(() => GetMessageStream(serviceLocator()))
+    ..registerFactory(() => SendMessage(chatRepository: serviceLocator()))
+    ..registerFactory(() => GetChatHistory(chatRepository: serviceLocator()))
+    ..registerFactory(() => SearchUsers(chatRepository: serviceLocator()))
+    ..registerFactory(() => DeleteChat(chatRepository: serviceLocator()))
+    ..registerLazySingleton(
+      () => ChatBloc(
+        connectChatSocket: serviceLocator(),
+        disconnectChatSocket: serviceLocator(),
+        getMessageStream: serviceLocator(),
+        searchUsers: serviceLocator(),
+        getChatHistory: serviceLocator(),
+        sendMessage: serviceLocator(),
+        deleteChat: serviceLocator(),
       ),
     );
 }

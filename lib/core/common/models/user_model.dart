@@ -22,8 +22,13 @@ class UserModel extends UserEntities {
       roles: _parseRoles(map['roles']),
       // 3. Handle both bool (from API) and int (from DB)
       active: map['active'] == 1 || map['active'] == true,
-      createdAt: DateTime.parse(map['createdAt']),
-      updatedAt: DateTime.parse(map['updatedAt']),
+      createdAt: map['createdAt'] != null
+          ? DateTime.parse(map['createdAt'])
+          : DateTime.now(),
+
+      updatedAt: map['updatedAt'] != null
+          ? DateTime.parse(map['updatedAt'])
+          : DateTime.now(),
     );
   }
 
