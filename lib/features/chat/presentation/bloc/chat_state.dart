@@ -18,6 +18,12 @@ final class ChatUsersLoaded extends ChatState {
   ChatUsersLoaded(this.users);
 }
 
+final class ChatConversationsLoaded extends ChatState {
+  final List<ChatConversationEntity> conversations;
+
+  ChatConversationsLoaded(this.conversations);
+}
+
 // State when "Chat Room Page" is active
 final class ChatRoomLoaded extends ChatState {
   final List<MessageEntity> messages;

@@ -20,6 +20,13 @@ class ChatGetHistory extends ChatEvent {
   ChatGetHistory(this.otherUserId);
 }
 
+final class ChatConversations extends ChatEvent {
+  final bool isSilent;
+
+  // Default to false so normal behavior works as expected
+  ChatConversations({this.isSilent = false});
+}
+
 class ChatSendMessage extends ChatEvent {
   final String receiverId;
   final String content;

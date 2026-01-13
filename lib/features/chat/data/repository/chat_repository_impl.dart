@@ -8,6 +8,7 @@ import 'package:repair_shop/features/chat/data/datasources/chat_local_source.dar
 import 'package:repair_shop/features/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:repair_shop/features/chat/data/datasources/chat_socket_service.dart';
 import 'package:repair_shop/features/chat/data/models/message_model.dart';
+import 'package:repair_shop/features/chat/domain/entities/chat_conversation_entity.dart';
 import 'package:repair_shop/features/chat/domain/entities/message_entity.dart';
 import 'package:repair_shop/features/chat/domain/repository/chat_repository.dart';
 
@@ -148,8 +149,33 @@ class ChatRepositoryImpl implements ChatRepository {
       } else {
         return left(Failure(message: "No Internet Connection"));
       }
-    } catch (e) {
-      throw ServerExecptions("Failed to get chat history: ${e.toString()}");
+    } on ServerExecptions catch (e) {
+      return left(Failure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<ChatConversationEntity>>>
+  getAllConversations() async {
+    try {
+      if (await connectionChecker.isConnected) {
+        final token = await spService.getToken();
+        if (token == null) return left(Failure(message: "Not authenticated"));
+
+        final conversations = await chatRemoteDataSource.getAllConversations(
+          token,
+        );
+
+        if (conversations.isEmpty) {
+          return Left(Failure(message: "Failed to get conversations"));
+        }
+
+        return right(conversations);
+      } else {
+        return left(Failure(message: "No Internet Connection"));
+      }
+    } on ServerExecptions catch (e) {
+      return left(Failure(message: e.message));
     }
   }
 

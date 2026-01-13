@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:repair_shop/core/common/entities/user_entities.dart';
 import 'package:repair_shop/core/usecase/usecase.dart';
+import 'package:repair_shop/features/chat/domain/entities/chat_conversation_entity.dart';
 import 'package:repair_shop/features/chat/domain/entities/message_entity.dart';
 import 'package:repair_shop/features/chat/domain/usecases/connect_chat_socket.dart';
 import 'package:repair_shop/features/chat/domain/usecases/delete_chat.dart';
 import 'package:repair_shop/features/chat/domain/usecases/disconnect_chat_socket.dart';
+import 'package:repair_shop/features/chat/domain/usecases/get_all_conversations.dart';
 import 'package:repair_shop/features/chat/domain/usecases/get_chat_history.dart';
 import 'package:repair_shop/features/chat/domain/usecases/get_message_stream.dart';
 import 'package:repair_shop/features/chat/domain/usecases/search_users.dart';
@@ -22,6 +24,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final GetMessageStream _getMessageStream;
   final SearchUsers _searchUsers;
   final GetChatHistory _getChatHistory;
+  final GetAllConversations _getAllConversations;
   final SendMessage _sendMessage;
   final DeleteChat _deleteChat;
 
@@ -33,6 +36,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     required GetMessageStream getMessageStream,
     required SearchUsers searchUsers,
     required GetChatHistory getChatHistory,
+    required GetAllConversations getAllConversations,
     required SendMessage sendMessage,
     required DeleteChat deleteChat,
   }) : _connectChatSocket = connectChatSocket,
@@ -40,6 +44,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
        _getMessageStream = getMessageStream,
        _searchUsers = searchUsers,
        _getChatHistory = getChatHistory,
+       _getAllConversations = getAllConversations,
        _sendMessage = sendMessage,
        _deleteChat = deleteChat,
        super(ChatInitial()) {
@@ -47,6 +52,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ChatDisconnectSocket>(_onDisconnectSocket);
     on<ChatSearchUsers>(_onSearchUsers);
     on<ChatGetHistory>(_onGetHistory);
+    on<ChatConversations>(_onChatConversations);
     on<ChatSendMessage>(_onSendMessage);
     on<ChatDeleteMessage>(_onDeleteMessage);
     on<_ChatReceiveMessage>(_onReceiveMessage);
@@ -100,6 +106,23 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     );
   }
 
+  void _onChatConversations(
+    ChatConversations event,
+    Emitter<ChatState> emit,
+  ) async {
+    // ONLY show loading if it's NOT a silent request
+    if (!event.isSilent) {
+      emit(ChatLoading());
+    }
+
+    final res = await _getAllConversations.call(NoParams());
+
+    res.fold(
+      (l) => emit(ChatFailure(l.message)),
+      (conversations) => emit(ChatConversationsLoaded(conversations)),
+    );
+  }
+
   // 4. Send Message
   void _onSendMessage(ChatSendMessage event, Emitter<ChatState> emit) async {
     // We don't emit Loading here to prevent the UI from flickering.
@@ -120,6 +143,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   // 5. Receive Real-time Message (Internal)
   void _onReceiveMessage(_ChatReceiveMessage event, Emitter<ChatState> emit) {
+    // Case 1: User is inside a Chat Room
     if (state is ChatRoomLoaded) {
       final currentState = state as ChatRoomLoaded;
 
@@ -134,6 +158,20 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       if (isRelevant) {
         emit(ChatRoomLoaded([event.message, ...currentState.messages]));
       }
+    }
+
+    // Case 2: User is looking at the Conversation List
+    if (state is ChatConversationsLoaded) {
+      // final currentList = (state as ChatConversationsLoaded).conversations;
+
+      // You would need logic here to:
+      // 1. Find the conversation this message belongs to
+      // 2. Update its 'lastMessage' and 'time'
+      // 3. Move it to index 0
+      // 4. emit(ChatConversationsLoaded(newList));
+
+      // For now, the easiest way is to just re-fetch the list silently:
+      add(ChatConversations(isSilent: true));
     }
   }
 

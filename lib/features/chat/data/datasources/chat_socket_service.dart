@@ -47,6 +47,7 @@ class ChatSocketService {
   }
 
   void diconnect() {
+    print("Socket disconnected");
     _socket?.disconnect();
     _socket?.dispose(); // Proper cleanup
     _socket = null; // Clear the reference

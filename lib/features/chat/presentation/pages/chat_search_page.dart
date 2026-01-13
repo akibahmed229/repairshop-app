@@ -82,12 +82,7 @@ class _ChatSearchPageState extends State<ChatSearchPage> {
                     // Navigate to Chat Room
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => ChatRoomPage(
-                          otherUserId: user.id,
-                          otherUserName: user.name,
-                        ),
-                      ),
+                      ChatRoomPage.route(user.id, user.name),
                     );
                   },
                 );

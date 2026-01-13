@@ -25,6 +25,7 @@ import 'package:repair_shop/features/chat/domain/repository/chat_repository.dart
 import 'package:repair_shop/features/chat/domain/usecases/connect_chat_socket.dart';
 import 'package:repair_shop/features/chat/domain/usecases/delete_chat.dart';
 import 'package:repair_shop/features/chat/domain/usecases/disconnect_chat_socket.dart';
+import 'package:repair_shop/features/chat/domain/usecases/get_all_conversations.dart';
 import 'package:repair_shop/features/chat/domain/usecases/get_chat_history.dart';
 import 'package:repair_shop/features/chat/domain/usecases/get_message_stream.dart';
 import 'package:repair_shop/features/chat/domain/usecases/search_users.dart';
@@ -284,6 +285,9 @@ void _initMessages() {
     ..registerFactory(() => GetMessageStream(serviceLocator()))
     ..registerFactory(() => SendMessage(chatRepository: serviceLocator()))
     ..registerFactory(() => GetChatHistory(chatRepository: serviceLocator()))
+    ..registerFactory(
+      () => GetAllConversations(chatRepository: serviceLocator()),
+    )
     ..registerFactory(() => SearchUsers(chatRepository: serviceLocator()))
     ..registerFactory(() => DeleteChat(chatRepository: serviceLocator()))
     ..registerLazySingleton(
@@ -293,6 +297,7 @@ void _initMessages() {
         getMessageStream: serviceLocator(),
         searchUsers: serviceLocator(),
         getChatHistory: serviceLocator(),
+        getAllConversations: serviceLocator(),
         sendMessage: serviceLocator(),
         deleteChat: serviceLocator(),
       ),

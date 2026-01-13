@@ -1,6 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:repair_shop/core/common/entities/user_entities.dart';
 import 'package:repair_shop/core/error/failure.dart';
+import 'package:repair_shop/features/chat/domain/entities/chat_conversation_entity.dart';
 import 'package:repair_shop/features/chat/domain/entities/message_entity.dart';
 
 abstract class ChatRepository {
@@ -19,6 +20,6 @@ abstract class ChatRepository {
   Future<Either<Failure, List<MessageEntity>>> getChatHistory(
     String otherUserId,
   );
-
+  Future<Either<Failure, List<ChatConversationEntity>>> getAllConversations();
   Future<Either<Failure, String>> deleteChat(String id);
 }
