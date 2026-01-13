@@ -36,7 +36,7 @@ class _TechNotePageState extends State<TechNotePage> {
       body: IndexedStack(index: _selectedIndex, children: _pages),
 
       bottomNavigationBar: Container(
-        margin: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: 16, left: 8, right: 8),
         decoration: BoxDecoration(
           color: AppPallete.borderColor,
           borderRadius: BorderRadius.circular(18),

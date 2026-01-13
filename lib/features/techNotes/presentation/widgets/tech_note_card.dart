@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:repair_shop/core/common/entities/user_entities.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/core/utils/format_date.dart';
 import 'package:repair_shop/features/techNotes/domain/entities/tech_note_entities.dart';
