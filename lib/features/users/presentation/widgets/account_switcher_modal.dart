@@ -5,6 +5,7 @@ import 'package:repair_shop/core/common/entities/user_entities.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:repair_shop/features/auth/presentation/pages/login_page.dart';
+import 'package:repair_shop/features/chat/presentation/bloc/chat_bloc.dart';
 import 'package:repair_shop/features/notifications/presentation/bloc/notification_bloc.dart';
 import 'package:repair_shop/features/techNotes/presentation/bloc/tech_note_bloc.dart';
 import 'package:repair_shop/features/users/presentation/bloc/user_bloc.dart';
@@ -29,16 +30,21 @@ class _AccountSwitcherModalState extends State<AccountSwitcherModal> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<UserBloc, UserState>(
-      listener: (context, state) {
+      listener: (context, state) async {
         if (state is SwitchUserAccountSuccessState) {
           // refersh ui
           context.read<NotificationBloc>().add(FetchNotificationsEvent());
           context.read<TechNoteBloc>().add(TechNotesGetEvent());
           context.read<TechNoteBloc>().add(TechNotesGetAllUsersEvent());
+          context.read<ChatBloc>().add(ChatConversations());
 
           // IMPORTANT: Update the global user so TechNotePage refreshes data
           context.read<AppWideUserCubit>().updateUser(state.user);
           Navigator.pop(context);
+
+          await Future.delayed(
+            const Duration(milliseconds: 500),
+          ); // Delay for UX
         }
 
         if (state is SignOutCurrentAccountSuccessState) {
