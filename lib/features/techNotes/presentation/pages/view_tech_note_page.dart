@@ -94,8 +94,11 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
         onPressed: () {
           Navigator.push(context, AddTechNotePage.route());
         },
-        backgroundColor: AppPallete.borderColor.withValues(alpha: 0.5),
-        child: const Icon(Icons.note_add_outlined, color: AppPallete.gradient2),
+        backgroundColor: AppPallete.gradient2,
+        child: const Icon(
+          Icons.note_add_outlined,
+          color: AppPallete.whiteColor,
+        ),
       ),
     );
   }

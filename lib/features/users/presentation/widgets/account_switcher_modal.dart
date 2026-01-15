@@ -31,22 +31,6 @@ class _AccountSwitcherModalState extends State<AccountSwitcherModal> {
   Widget build(BuildContext context) {
     return BlocConsumer<UserBloc, UserState>(
       listener: (context, state) async {
-        if (state is SwitchUserAccountSuccessState) {
-          // refersh ui
-          context.read<NotificationBloc>().add(FetchNotificationsEvent());
-          context.read<TechNoteBloc>().add(TechNotesGetEvent());
-          context.read<TechNoteBloc>().add(TechNotesGetAllUsersEvent());
-          context.read<ChatBloc>().add(ChatConversations());
-
-          // IMPORTANT: Update the global user so TechNotePage refreshes data
-          context.read<AppWideUserCubit>().updateUser(state.user);
-          Navigator.pop(context);
-
-          await Future.delayed(
-            const Duration(milliseconds: 500),
-          ); // Delay for UX
-        }
-
         if (state is SignOutCurrentAccountSuccessState) {
           // Refresh the list in the modal
           context.read<UserBloc>().add(const GetAllCachedUsersEvent());
@@ -64,6 +48,22 @@ class _AccountSwitcherModalState extends State<AccountSwitcherModal> {
             LoginPage.route(),
             (_) => false,
           );
+        }
+
+        if (state is SwitchUserAccountSuccessState) {
+          // refersh ui
+          context.read<NotificationBloc>().add(FetchNotificationsEvent());
+          context.read<TechNoteBloc>().add(TechNotesGetEvent());
+          context.read<TechNoteBloc>().add(TechNotesGetAllUsersEvent());
+          context.read<ChatBloc>().add(ChatConversations());
+
+          // IMPORTANT: Update the global user so TechNotePage refreshes data
+          context.read<AppWideUserCubit>().updateUser(state.user);
+          Navigator.pop(context);
+
+          await Future.delayed(
+            const Duration(milliseconds: 500),
+          ); // Delay for UX
         }
       },
       builder: (context, state) {

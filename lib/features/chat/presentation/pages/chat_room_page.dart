@@ -27,8 +27,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  late ChatBloc _chatBloc; // Use your actual Bloc type here
-
   @override
   void initState() {
     super.initState();
@@ -47,21 +45,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // We grab the reference here while the context is still stable
-    _chatBloc = context.read<ChatBloc>();
-  }
-
-  @override
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
-
-    // 3. Disconnect the socket to prevent memory leaks or duplicate listeners
-    // Note: Ensure your Bloc provider is high enough in the tree or handle this carefully
-    // _chatBloc.add(ChatDisconnectSocket());
-
     super.dispose();
   }
 

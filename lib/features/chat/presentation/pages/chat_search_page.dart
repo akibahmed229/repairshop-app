@@ -36,11 +36,19 @@ class _ChatSearchPageState extends State<ChatSearchPage> {
       appBar: AppBar(
         title: TextField(
           controller: _searchController,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
-            hintText: "Search by email...",
-            border: InputBorder.none,
-            hintStyle: TextStyle(color: Colors.white54),
+          decoration: InputDecoration(
+            hintText: 'Search by email..',
+            prefixIcon: Icon(Icons.email_outlined),
+            border: OutlineInputBorder(
+              // Provides a border around the field
+              borderRadius: BorderRadius.circular(
+                20.0,
+              ), // Makes the corners rounded
+            ),
+            contentPadding: EdgeInsets.symmetric(
+              vertical: 10.0,
+              horizontal: 15.0,
+            ), // Adjusts internal padding
           ),
           onSubmitted: (_) => _onSearch(),
         ),

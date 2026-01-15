@@ -30,18 +30,22 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<Either<Failure, Stream<MessageEntity>>> get messageStream async {
     try {
-      final token = await spService.getToken();
-      final myUserId = await chatLocalSource.getUserIdByToken(token!);
+      if (await connectionChecker.isConnected) {
+        final token = await spService.getToken();
+        final myUserId = await chatLocalSource.getUserIdByToken(token!);
 
-      final streamOfMessages = socketService.messageStream.map((data) {
-        try {
-          return MessageModel.fromJson(data, myUserId);
-        } catch (e) {
-          throw Exception("Model parsing failed");
-        }
-      });
+        final streamOfMessages = socketService.messageStream.map((data) {
+          try {
+            return MessageModel.fromJson(data, myUserId);
+          } catch (e) {
+            throw Exception("Model parsing failed");
+          }
+        });
 
-      return right(streamOfMessages);
+        return right(streamOfMessages);
+      } else {
+        return left(Failure(message: "No Internet Connection"));
+      }
     } on ServerExecptions catch (e) {
       return left(Failure(message: e.message));
     }
@@ -50,12 +54,16 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<Either<Failure, Unit>> connectSocket() async {
     try {
-      final token = await spService.getToken();
-      final userId = await chatLocalSource.getUserIdByToken(token!);
+      if (await connectionChecker.isConnected) {
+        final token = await spService.getToken();
+        final userId = await chatLocalSource.getUserIdByToken(token!);
 
-      socketService.connect(userId, '');
+        socketService.connect(userId, '');
 
-      return right(unit);
+        return right(unit);
+      } else {
+        return left(Failure(message: "No Internet Connection"));
+      }
     } on ServerExecptions catch (e) {
       return left(Failure(message: e.message));
     }
@@ -64,9 +72,13 @@ class ChatRepositoryImpl implements ChatRepository {
   @override
   Future<Either<Failure, Unit>> disconnectSocket() async {
     try {
-      socketService.diconnect();
+      if (await connectionChecker.isConnected) {
+        socketService.diconnect();
 
-      return right(unit);
+        return right(unit);
+      } else {
+        return left(Failure(message: "No Internet Connection"));
+      }
     } on ServerExecptions catch (e) {
       return left(Failure(message: e.message));
     }

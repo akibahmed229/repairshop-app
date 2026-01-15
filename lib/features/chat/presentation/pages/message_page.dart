@@ -16,12 +16,13 @@ class MessagePage extends StatefulWidget {
 }
 
 class _MessagePageState extends State<MessagePage> {
+  // 1. Local Cache: Keeps the list on screen while reloading in background
+  List<dynamic> _currentConversations = [];
+
   @override
   void initState() {
     super.initState();
-    // 1. Connect Socket
     context.read<ChatBloc>().add(ChatConnectSocket());
-    // 2. Fetch Conversations (You'll need to add this event to your Bloc)
     context.read<ChatBloc>().add(ChatConversations());
   }
 
@@ -36,54 +37,62 @@ class _MessagePageState extends State<MessagePage> {
           }
         },
         buildWhen: (previous, current) {
-          // Ignore 'ChatRoomLoaded' state so this page doesn't go blank
-          return current is ChatConversationsLoaded || current is ChatLoading;
+          // FIX: Allow 'ChatFailure' so the page can rebuild and remove the loader
+          return current is ChatConversationsLoaded ||
+              current is ChatLoading ||
+              current is ChatFailure;
         },
         builder: (context, state) {
-          if (state is ChatLoading) {
+          // 2. Update Cache if we have new data
+          if (state is ChatConversationsLoaded) {
+            _currentConversations = state.conversations;
+          }
+
+          // 3. Loading Logic: Only show Loader if we have NO data to show
+          if (state is ChatLoading && _currentConversations.isEmpty) {
             return const Loader();
           }
 
-          if (state is ChatConversationsLoaded) {
-            final conversations = state.conversations;
-
-            if (conversations.isEmpty) {
-              return _buildEmptyState();
-            }
-
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<ChatBloc>().add(ChatConversations());
-              },
-              child: ListView.separated(
-                itemCount: conversations.length,
-                separatorBuilder: (context, index) => const Padding(
-                  padding: EdgeInsetsGeometry.only(left: 16, right: 26),
-                  child: Divider(height: 1),
-                ),
-                itemBuilder: (context, index) {
-                  final chat = conversations[index];
-                  return Padding(
-                    padding: EdgeInsetsGeometry.only(top: 8, bottom: 8),
-                    child: _buildChatTile(
-                      context,
-                      name: chat.otherUserName,
-                      lastMessage: chat.lastMessage,
-                      // Passing the DateTime to a helper for formatting
-                      time: formatDateByMMMYYYY(chat.time),
-                      userId: chat.otherUserId,
-                    ),
-                  );
-                },
-              ),
-            );
+          // 4. Failure Logic: If offline & empty, show Retry button
+          if (state is ChatFailure && _currentConversations.isEmpty) {
+            return _buildErrorState(state.toString());
           }
 
-          return const SizedBox(); // Default state
+          // 5. Empty Logic: If loaded but list is empty
+          if (_currentConversations.isEmpty) {
+            return _buildEmptyState();
+          }
+
+          // 6. Success Logic: Show the list (cached or fresh)
+          return RefreshIndicator(
+            onRefresh: () async {
+              context.read<ChatBloc>().add(ChatConversations());
+            },
+            child: ListView.separated(
+              itemCount: _currentConversations.length,
+              separatorBuilder: (context, index) => const Padding(
+                padding: EdgeInsets.only(left: 16, right: 26),
+                child: Divider(height: 1),
+              ),
+              itemBuilder: (context, index) {
+                final chat = _currentConversations[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: _buildChatTile(
+                    context,
+                    name: chat.otherUserName,
+                    lastMessage: chat.lastMessage,
+                    time: formatDateByMMMYYYY(chat.time),
+                    userId: chat.otherUserId,
+                  ),
+                );
+              },
+            ),
+          );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        heroTag: 'chat_search_fab',
+        heroTag: 'chat_search_tab',
         backgroundColor: AppPallete.gradient2,
         onPressed: () {
           Navigator.push(
@@ -116,6 +125,31 @@ class _MessagePageState extends State<MessagePage> {
     );
   }
 
+  Widget _buildErrorState(String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.wifi_off, size: 60, color: Colors.grey),
+          const SizedBox(height: 16),
+          Text(
+            error,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              // Trigger a full reload
+              context.read<ChatBloc>().add(ChatConversations());
+            },
+            child: const Text("Retry"),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildChatTile(
     BuildContext context, {
     required String name,
@@ -125,10 +159,11 @@ class _MessagePageState extends State<MessagePage> {
   }) {
     return ListTile(
       onTap: () async {
-        Navigator.push(context, ChatRoomPage.route(userId, name));
+        // 7. Navigation Wait Logic
+        await Navigator.push(context, ChatRoomPage.route(userId, name));
 
         if (context.mounted) {
-          // This fetches new data but DOES NOT trigger the Loading screen
+          // Silent refresh: Updates the cached list in background without spinner
           context.read<ChatBloc>().add(ChatConversations(isSilent: true));
         }
       },
@@ -136,7 +171,7 @@ class _MessagePageState extends State<MessagePage> {
         radius: 28,
         backgroundColor: AppPallete.gradient3.withValues(alpha: 0.2),
         child: Text(
-          name[0],
+          name.isNotEmpty ? name[0].toUpperCase() : '?',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
