@@ -21,17 +21,8 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
 
-  // 1. Make this state depend on the Bloc state, remove the cached list
+  // We only need local state for the currently selected dropdown value
   String? _assignedTo;
-
-  // 2. Local variables to hold data retrieved from the LAST success state
-  List<UserEntities> _availableUsers = [];
-
-  @override
-  void initState() {
-    super.initState();
-    context.read<TechNoteBloc>().add(TechNotesGetAllUsersEvent());
-  }
 
   @override
   void dispose() {
@@ -40,18 +31,18 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
     super.dispose();
   }
 
-  void _createNewNote() {
+  // Helper to create note using users list from Bloc state
+  void _createNewNote(List<UserEntities> users) {
     if (_formKey.currentState?.validate() ?? false) {
       if (_assignedTo == null) {
-        showSnackBar(context, "Please select a user to assign the note.");
+        showSnackBar(context, "Please select a user.");
         return;
       }
 
-      // Look up the ID from the current list of available users
-      final selectedUser = _availableUsers.firstWhere(
+      // Use .cast<UserEntities>() to fix the type mismatch
+      final selectedUser = users.cast<UserEntities>().firstWhere(
         (u) => u.name == _assignedTo,
-        // Fallback for safety, though controlled by dropdown
-        orElse: () => throw Exception("Selected user not found."),
+        orElse: () => users.first,
       );
 
       context.read<TechNoteBloc>().add(
@@ -73,7 +64,9 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: _createNewNote,
+            // Pass the current users list from the bloc state to our function
+            onPressed: () =>
+                _createNewNote(context.read<TechNoteBloc>().state.users),
             icon: CircleAvatar(
               backgroundColor: AppPallete.borderColor.withValues(alpha: 0.5),
               child: const Icon(
@@ -88,58 +81,37 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
         padding: const EdgeInsets.all(20.0),
         child: BlocConsumer<TechNoteBloc, TechNoteState>(
           listener: (context, state) {
-            if (state is TechNoteFailure) {
-              showSnackBar(context, state.message);
+            if (state.status == TechNoteStatus.failure) {
+              showSnackBar(context, state.message ?? "Error");
             }
-            if (state is TechNoteCreateSuccess) {
-              // Clear fields after success
+            if (state.status == TechNoteStatus.actionSuccess) {
+              showSnackBar(context, state.message ?? "Success");
               _titleController.clear();
               _contentController.clear();
-              showSnackBar(context, "Note created successfully!");
-              // Optional: Navigator.of(context).pop();
-
-              context.read<TechNoteBloc>().add(TechNotesGetEvent()); // referesh
-            }
-
-            // 3. HANDLE SUCCESS STATE IN LISTENER + SETSTATE
-            // This is the cleanest way to update StatefulWidget data based on Bloc event success.
-            if (state is TechNotesGetAllUsersSuccess) {
-              // Check if the data is new before triggering setState
-              if (state.users.map((u) => u.id).toSet() !=
-                  _availableUsers.map((u) => u.id).toSet()) {
-                setState(() {
-                  _availableUsers = state.users;
-                  // Set default assignedTo only if currently null and we have users
-                  if (_assignedTo == null && _availableUsers.isNotEmpty) {
-                    _assignedTo = _availableUsers.first.name;
-                  }
-                });
-              }
             }
           },
           builder: (context, state) {
-            // 4. Handle Loading and Data Availability Checks
-            final bool isLoading = state is TechNoteLoading;
-            final bool hasUsers =
-                _availableUsers.isNotEmpty && _assignedTo != null;
+            // 1. Get users directly from state
+            final availableUsers = state.users;
 
-            if (isLoading && _availableUsers.isEmpty) {
-              // Show loader only if we haven't fetched any users yet
+            // 2. Initial selection logic (auto-select first user)
+            if (_assignedTo == null && availableUsers.isNotEmpty) {
+              _assignedTo = availableUsers.first.name;
+            }
+
+            // 3. Handle loading only if we have NO users to show
+            if (state.status == TechNoteStatus.loading &&
+                availableUsers.isEmpty) {
               return const Loader();
             }
 
-            if (!hasUsers) {
-              // Display this message if fetching is complete but no users were returned
-              return const Center(
-                child: Text(
-                  "No users available to assign notes.",
-                  style: TextStyle(color: AppPallete.whiteColor),
-                ),
-              );
+            // 4. If loaded but empty
+            if (availableUsers.isEmpty &&
+                state.status != TechNoteStatus.loading) {
+              return const Center(child: Text("No users available"));
             }
 
-            // 5. Build the Form (We are now guaranteed to have _assignedTo and _availableUsers)
-            final List<DropdownMenuItem<String>> userItems = _availableUsers
+            final userItems = availableUsers
                 .map(
                   (user) => DropdownMenuItem(
                     value: user.name,
@@ -152,7 +124,7 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
               key: _formKey,
               child: ListView(
                 children: [
-                  // ... (Title and Text Editors remain the same)
+                  // Title and Description Fields ...
                   Row(
                     children: [
                       const Icon(Icons.note_add_outlined, size: 36),
@@ -186,25 +158,22 @@ class _AddTechNotePageState extends State<AddTechNotePage> {
                     hintText: "Describe the work details",
                     minLines: 8,
                   ),
-                  const SizedBox(height: 20),
 
-                  // Dropdown Section
+                  const SizedBox(height: 20),
                   const Text(
                     "ASSIGNED TO:",
                     style: TextStyle(color: Colors.white),
                   ),
                   const SizedBox(height: 5),
+
+                  // 5. Dropdown uses the cached users
                   MyDropDownMenu(
-                    // Now safely use ! because 'hasUsers' check guarantees non-null
-                    value:
-                        (_assignedTo ??
-                        (hasUsers ? _availableUsers.first.name : '')),
+                    value: _assignedTo ?? '',
                     onChanged: (value) {
                       setState(() {
                         _assignedTo = value;
                       });
                     },
-                    // Pass the list of items built from the successful state
                     items: userItems,
                   ),
                 ],

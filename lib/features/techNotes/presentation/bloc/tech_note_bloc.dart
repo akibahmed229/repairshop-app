@@ -34,8 +34,14 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
        _updateTechNote = updateTechNote,
        _deleteTechNote = deleteTechNote,
        _getAllTechNoteUsers = getAllTechNoteUsers,
-       super(TechNoteInitial()) {
-    on<TechNoteEvent>((event, emit) => emit(TechNoteLoading()));
+       super(const TechNoteState()) {
+    // Generic loading handler
+    on<TechNoteEvent>((event, emit) {
+      // Don't show loading spinner if we are just deleting/updating silently
+      if (state.status != TechNoteStatus.loading) {
+        emit(state.copyWith(status: TechNoteStatus.loading));
+      }
+    });
     on<TechNotesGetEvent>(_onTechNotesGetEvent);
     on<TechNotesSyncEvent>(_onTechNotesSyncEvent);
     on<TechNoteCreateEvent>(_onTechNoteCreateEvent);
@@ -51,8 +57,16 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
     final res = await _getAllTechNotes(NoParams());
 
     res.fold(
-      (failure) => emit(TechNoteFailure(message: failure.message)),
-      ((notes) => emit(TechNotesGetSuccess(notes))),
+      (failure) => emit(
+        state.copyWith(
+          status: TechNoteStatus.failure,
+          message: failure.message,
+        ),
+      ),
+      ((notes) => emit(
+        // Updates notes, KEEPS users!
+        state.copyWith(status: TechNoteStatus.success, notes: notes),
+      )),
     );
   }
 
@@ -64,8 +78,16 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
     add(TechNotesGetEvent());
 
     res.fold(
-      (failure) => emit(TechNoteFailure(message: failure.message)),
-      (isSynced) => emit(TechNotesSyncSuccess(isSynced)),
+      (failure) => emit(
+        state.copyWith(
+          status: TechNoteStatus.failure,
+          message: failure.message,
+        ),
+      ),
+      (_) {
+        // Just emit success, TechNotesGetEvent will handle the data update
+        emit(state.copyWith(status: TechNoteStatus.success));
+      },
     );
   }
 
@@ -84,8 +106,24 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
     );
 
     res.fold(
-      (failure) => emit(TechNoteFailure(message: failure.message)),
-      (note) => emit(TechNoteCreateSuccess(note)),
+      (failure) => emit(
+        state.copyWith(
+          status: TechNoteStatus.failure,
+          message: failure.message,
+        ),
+      ),
+      (note) {
+        // Optimistic Update: Add new note to current list immediately
+        final updatedNotes = List<TechNoteEntities>.from(state.notes)
+          ..add(note);
+        emit(
+          state.copyWith(
+            status: TechNoteStatus.actionSuccess, // Special status for Toasts
+            message: "Note Created Successfully",
+            notes: updatedNotes,
+          ),
+        );
+      },
     );
   }
 
@@ -104,8 +142,21 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
     );
 
     res.fold(
-      (failure) => emit(TechNoteFailure(message: failure.message)),
-      (message) => emit(TechNoteUpdateAndDeleteSuccess(message)),
+      (failure) => emit(
+        state.copyWith(
+          status: TechNoteStatus.failure,
+          message: failure.message,
+        ),
+      ),
+      (message) {
+        add(const TechNotesGetEvent()); // Refresh to be safe
+        emit(
+          state.copyWith(
+            status: TechNoteStatus.actionSuccess,
+            message: message,
+          ),
+        );
+      },
     );
   }
 
@@ -116,8 +167,25 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
     final res = await _deleteTechNote(DeleteTechNoteParams(id: event.id));
 
     res.fold(
-      (failure) => emit(TechNoteFailure(message: failure.message)),
-      (message) => emit(TechNoteUpdateAndDeleteSuccess(message)),
+      (failure) => emit(
+        state.copyWith(
+          status: TechNoteStatus.failure,
+          message: failure.message,
+        ),
+      ),
+      (message) {
+        // Optimistic delete: remove locally first for instant UI feedback
+        final updatedNotes = state.notes
+            .where((n) => n.id != event.id)
+            .toList();
+        emit(
+          state.copyWith(
+            status: TechNoteStatus.actionSuccess,
+            message: message,
+            notes: updatedNotes,
+          ),
+        );
+      },
     );
   }
 
@@ -128,8 +196,14 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
     final res = await _getAllTechNoteUsers(NoParams());
 
     res.fold(
-      (failure) => emit(TechNoteFailure(message: failure.message)),
-      (users) => emit(TechNotesGetAllUsersSuccess(users)),
+      (failure) => emit(
+        state.copyWith(
+          status: TechNoteStatus.failure,
+          message: failure.message,
+        ),
+      ),
+      (users) =>
+          emit(state.copyWith(status: TechNoteStatus.success, users: users)), // Updates users, KEEPS notes!
     );
   }
 }

@@ -1,49 +1,41 @@
 part of 'tech_note_bloc.dart';
 
-@immutable
-sealed class TechNoteState {
-  const TechNoteState();
+// Define statuses to tell the UI what is currently happening
+enum TechNoteStatus {
+  initial,
+  loading,
+  success,
+  failure,
+  actionSuccess, // For toasts like "Note created!" or "Deleted!"
 }
 
-final class TechNoteInitial extends TechNoteState {
-  const TechNoteInitial();
-}
+// A single class holding ALL data persistently
+class TechNoteState {
+  final TechNoteStatus status;
+  final List<TechNoteEntities> notes; // Holds notes list
+  final List<UserEntities> users; // Holds users list
+  final String? message; // For error messages or success toasts
 
-final class TechNoteLoading extends TechNoteState {
-  const TechNoteLoading();
-}
+  const TechNoteState({
+    this.status = TechNoteStatus.initial,
+    this.notes = const [],
+    this.users = const [],
+    this.message,
+  });
 
-final class TechNoteFailure extends TechNoteState {
-  final String message;
-
-  const TechNoteFailure({required this.message});
-}
-
-final class TechNotesGetSuccess extends TechNoteState {
-  final List<TechNoteEntities> notes;
-
-  const TechNotesGetSuccess(this.notes);
-}
-
-final class TechNotesSyncSuccess extends TechNoteState {
-  final bool isSynced;
-
-  const TechNotesSyncSuccess(this.isSynced);
-}
-
-final class TechNoteCreateSuccess extends TechNoteState {
-  final TechNoteEntities note;
-
-  const TechNoteCreateSuccess(this.note);
-}
-
-final class TechNoteUpdateAndDeleteSuccess extends TechNoteState {
-  final String message;
-
-  const TechNoteUpdateAndDeleteSuccess(this.message);
-}
-
-final class TechNotesGetAllUsersSuccess extends TechNoteState {
-  final List<UserEntities> users;
-  const TechNotesGetAllUsersSuccess(this.users);
+  // The copyWith method is the key. It allows updating ONE field
+  // while keeping the others (like keeping 'users' while updating 'notes')
+  TechNoteState copyWith({
+    TechNoteStatus? status,
+    List<TechNoteEntities>? notes,
+    List<UserEntities>? users,
+    String? message,
+  }) {
+    return TechNoteState(
+      status: status ?? this.status,
+      notes: notes ?? this.notes,
+      users: users ?? this.users,
+      message: message ?? this.message,
+    );
+  }
 }

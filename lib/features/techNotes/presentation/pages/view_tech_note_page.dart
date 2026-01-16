@@ -21,13 +21,13 @@ class ViewTechNotePage extends StatefulWidget {
 
 class _ViewTechNotePageState extends State<ViewTechNotePage> {
   int noteCount = 0;
-  List<TechNoteEntities> notes = [];
   bool isGridView = false;
 
   @override
   void initState() {
     super.initState();
     context.read<TechNoteBloc>().add(TechNotesSyncEvent());
+    context.read<TechNoteBloc>().add(TechNotesGetAllUsersEvent());
   }
 
   @override
@@ -51,19 +51,23 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
       ),
       body: BlocConsumer<TechNoteBloc, TechNoteState>(
         listener: (context, state) {
-          if (state is TechNoteFailure) {
-            showSnackBar(context, state.message);
+          if (state.status == TechNoteStatus.failure) {
+            showSnackBar(context, state.message ?? "Error");
           }
         },
         builder: (context, state) {
-          if (state is TechNoteLoading) {
+          // If loading and we have NO data, show spinner
+          if (state.status == TechNoteStatus.loading && state.notes.isEmpty) {
             return const Loader();
           }
 
-          if (state is TechNotesGetSuccess) {
-            noteCount = state.notes.length;
-            notes = state.notes;
+          // If failed and we have NO data, show error
+          if (state.status == TechNoteStatus.failure && state.notes.isEmpty) {
+            return Center(child: Text(state.message ?? "Error loading notes"));
           }
+
+          // Use the notes directly from the state
+          final notes = state.notes;
 
           // Default widget when no condition matches
           return RefreshIndicator(
@@ -73,6 +77,7 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
 
               // Sync and Fetch TechNotes
               techNoteBloc.add(TechNotesSyncEvent());
+              techNoteBloc.add(TechNotesGetAllUsersEvent());
 
               // 2. REFRESH NOTIFICATIONS
               // This will trigger the NotificationBell to rebuild automatically
@@ -86,7 +91,9 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
               ); // Delay for UX
             },
 
-            child: isGridView ? _buildGridView() : _buildListView(),
+            child: notes.isEmpty
+                ? const Center(child: Text("No Notes Found"))
+                : (isGridView ? _buildGridView(notes) : _buildListView(notes)),
           );
         },
       ),
@@ -104,7 +111,7 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
   }
 
   // Helper for List Layout
-  Widget _buildListView() {
+  Widget _buildListView(List<TechNoteEntities> notes) {
     return ListView.builder(
       itemCount: notes.length,
       itemBuilder: (context, index) =>
@@ -113,7 +120,7 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
   }
 
   // Helper for Grid Layout
-  Widget _buildGridView() {
+  Widget _buildGridView(List<TechNoteEntities> notes) {
     return GridView.builder(
       padding: const EdgeInsets.all(8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

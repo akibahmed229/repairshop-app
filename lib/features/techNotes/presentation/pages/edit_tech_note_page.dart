@@ -27,10 +27,9 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
 
-  late String _assignedTo = '';
+  // Track the selected email directly
+  String? _assignedTo;
   late bool _completed;
-  final List<String> _users = [];
-  List<UserEntities> _userEntities = [];
 
   @override
   void initState() {
@@ -38,7 +37,15 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
     _titleController = TextEditingController(text: widget.note.title);
     _contentController = TextEditingController(text: widget.note.content);
     _completed = widget.note.completed;
-    context.read<TechNoteBloc>().add(TechNotesGetAllUsersEvent());
+
+    // 1. Initialize with the existing note's user email
+    _assignedTo = widget.note.userEmail;
+
+    // 2. SMART FETCH: Only fetch users if they aren't already in the Bloc state
+    // This prevents wiping data or making unnecessary network calls.
+    if (context.read<TechNoteBloc>().state.users.isEmpty) {
+      context.read<TechNoteBloc>().add(const TechNotesGetAllUsersEvent());
+    }
   }
 
   @override
@@ -49,8 +56,22 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
   }
 
   void _updateNote() {
-    final selectedUser = _userEntities.firstWhere(
+    // 3. Get the latest user list directly from the Bloc State
+    final users = context.read<TechNoteBloc>().state.users;
+
+    if (users.isEmpty) {
+      showSnackBar(context, "User list not loaded. Cannot update.");
+      return;
+    }
+
+    // Find the user object based on the selected email
+    final selectedUser = users.cast<UserEntities>().firstWhere(
       (u) => u.email == _assignedTo,
+      // Fallback to the current note's user ID if not found in list (safety)
+      orElse: () => users.firstWhere(
+        (u) => u.id == widget.note.userId,
+        orElse: () => users.first,
+      ),
     );
 
     context.read<TechNoteBloc>().add(
@@ -66,21 +87,6 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
 
   void _deleteNote() {
     context.read<TechNoteBloc>().add(TechNoteDeleteEvent(id: widget.note.id));
-  }
-
-  void _populateUsers(List<UserEntities> users) {
-    setState(() {
-      _userEntities = users;
-      _users.clear();
-      _users.addAll(users.map((user) => user.email));
-
-      // Match the current note's userEmail to the list, or default to first
-      if (_users.isNotEmpty) {
-        _assignedTo = _users.contains(widget.note.userEmail)
-            ? widget.note.userEmail!
-            : _users.first;
-      }
-    });
   }
 
   @override
@@ -112,48 +118,53 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
       ),
       body: BlocConsumer<TechNoteBloc, TechNoteState>(
         listener: (context, state) {
-          if (state is TechNoteFailure) {
-            showSnackBar(context, state.message);
+          if (state.status == TechNoteStatus.failure) {
+            showSnackBar(context, state.message ?? "An error occurred");
           }
 
-          if (state is TechNotesGetAllUsersSuccess) {
-            _populateUsers(state.users);
-          }
-
-          if (state is TechNoteUpdateAndDeleteSuccess) {
-            showSnackBar(context, state.message);
+          // 4. Handle Success for Update or Delete
+          if (state.status == TechNoteStatus.actionSuccess) {
+            showSnackBar(context, state.message ?? "Success");
             Navigator.pop(context);
-            context.read<TechNoteBloc>().add(TechNotesGetEvent());
           }
         },
         builder: (context, state) {
-          if (state is TechNoteLoading) {
+          // 5. Access the persisted users list directly
+          final users = state.users;
+
+          // Show loader only if we are loading AND have no data
+          if (state.status == TechNoteStatus.loading && users.isEmpty) {
             return const Loader();
           }
 
-          if (_users.isEmpty && state is! TechNoteLoading) {
-            return const Center(child: Text("Loading users..."));
-          }
-
-          // Build the Form (We are now guaranteed to have _assignedTo and _availableUsers)
-          final List<DropdownMenuItem<String>> userItems = _users.map((email) {
+          // Generate dropdown items from state data
+          final List<DropdownMenuItem<String>> userItems = users.map((user) {
             return DropdownMenuItem(
-              value: email,
-              child: Text(email, style: const TextStyle(fontSize: 14)),
+              value: user.email,
+              child: Text(user.email, style: const TextStyle(fontSize: 14)),
             );
           }).toList();
 
+          // Safety Check: Ensure the currently selected _assignedTo actually exists in the list.
+          // If the user was deleted from the DB, _assignedTo might be invalid for the Dropdown.
+          // If invalid, default to the first available user.
+          if (users.isNotEmpty &&
+              _assignedTo != null &&
+              !users.any((u) => u.email == _assignedTo)) {
+            _assignedTo = users.first.email;
+          }
+
           return Padding(
-            padding: EdgeInsetsGeometry.all(20),
+            padding: const EdgeInsets.all(20),
             child: Form(
               key: _formKey,
               child: ListView(
                 children: [
-                  Row(
+                  const Row(
                     children: [
                       Icon(Icons.edit_note, size: 36),
                       SizedBox(width: 10),
-                      const Text(
+                      Text(
                         "Edit Note",
                         style: TextStyle(
                           fontSize: 26,
@@ -187,7 +198,7 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Work Complete
+                  // Work Complete Checkbox
                   Row(
                     children: [
                       const Text(
@@ -212,36 +223,42 @@ class _EditTechNotePageState extends State<EditTechNotePage> {
                     style: TextStyle(color: Colors.white),
                   ),
                   const SizedBox(height: 5),
-                  MyDropDownMenu(
-                    // Ensure value is never empty if items exist
-                    value: _assignedTo.isEmpty && _users.isNotEmpty
-                        ? _users.first
-                        : _assignedTo,
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _assignedTo = value);
-                      }
-                    },
-                    items: userItems,
-                  ),
+
+                  // Only show dropdown if we have users, else show a placeholder/loader text
+                  users.isEmpty
+                      ? const Text(
+                          "Loading users...",
+                          style: TextStyle(color: Colors.grey),
+                        )
+                      : MyDropDownMenu(
+                          value:
+                              _assignedTo ??
+                              (users.isNotEmpty ? users.first.email : ''),
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() => _assignedTo = value);
+                            }
+                          },
+                          items: userItems,
+                        ),
+
                   const SizedBox(height: 20),
 
-                  // Created & Updated in a row
+                  // Created & Updated Dates
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
                         children: [
                           const Icon(Icons.event_note),
-                          SizedBox(width: 6),
+                          const SizedBox(width: 6),
                           Text(formatDateByMMMYYYY(widget.note.createdAt)),
                         ],
                       ),
-
                       Row(
                         children: [
                           const Icon(Icons.history_toggle_off),
-                          SizedBox(width: 6),
+                          const SizedBox(width: 6),
                           Text(formatDateByMMMYYYY(widget.note.updatedAt)),
                         ],
                       ),
