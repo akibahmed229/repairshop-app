@@ -30,6 +30,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   StreamSubscription<MessageEntity>? _socketSubscription;
 
+  // Guard Variable to prevent double invoke on first render
+  bool _isFetching = false;
+
   ChatBloc({
     required ConnectChatSocket connectChatSocket,
     required DisconnectChatSocket disconnectChatSocket,
@@ -110,17 +113,27 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     ChatConversations event,
     Emitter<ChatState> emit,
   ) async {
-    // ONLY show loading if it's NOT a silent request
-    if (!event.isSilent) {
-      emit(ChatLoading());
+    // APPLY GUARD: If already fetching, ignore this duplicate trigger
+    if (_isFetching) return;
+
+    _isFetching = true; // Lock
+
+    try {
+      // ONLY show loading if it's NOT a silent request
+      if (!event.isSilent) {
+        emit(ChatLoading());
+      }
+
+      final res = await _getAllConversations.call(NoParams());
+
+      res.fold(
+        (l) => emit(ChatFailure(l.message)),
+        (conversations) => emit(ChatConversationsLoaded(conversations)),
+      );
+    } finally {
+      // UNLOCK: Always release the guard, even if error occurs
+      _isFetching = false;
     }
-
-    final res = await _getAllConversations.call(NoParams());
-
-    res.fold(
-      (l) => emit(ChatFailure(l.message)),
-      (conversations) => emit(ChatConversationsLoaded(conversations)),
-    );
   }
 
   // 4. Send Message

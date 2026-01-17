@@ -60,26 +60,28 @@ class _RepairShopState extends State<RepairShop> {
       debugShowCheckedModeBanner: false,
       title: "Repair Shop",
       theme: AppTheme.darkThemeMode,
-      home: BlocListener<AppWideUserCubit, AppWideUserState>(
-        listener: (context, state) {
-          if (state is AppWideUserLoggedIn) {
-            // Grab the bloc instance immediately
-            final authBloc = context.read<AuthBloc>();
-
-            // Initialize service only when logged in
-            // Use Future.microtask to ensure the UI transition finishes first
-            Future.microtask(() {
-              NotificationService.initNotifications(authBloc);
-              NotificationService.setupForegroundListeners();
-            });
-          }
+      home: BlocBuilder<AppWideUserCubit, AppWideUserState>(
+        // buildWhen ensures the UI only rebuilds if the login status actually CHANGED
+        buildWhen: (previous, current) {
+          return (previous is AppWideUserLoggedIn) !=
+              (current is AppWideUserLoggedIn);
         },
-        child: BlocSelector<AppWideUserCubit, AppWideUserState, bool>(
-          selector: (state) => state is AppWideUserLoggedIn,
-          builder: (context, isLoggedIn) {
-            return isLoggedIn ? const TechNotePage() : const LoginPage();
-          },
-        ),
+        builder: (context, state) {
+          if (state is AppWideUserLoggedIn) {
+              // Grab the bloc instance immediately
+              final authBloc = context.read<AuthBloc>();
+
+              // Initialize service only when logged in
+              // Use Future.microtask to ensure the UI transition finishes first
+              Future.microtask(() {
+                NotificationService.initNotifications(authBloc);
+                NotificationService.setupForegroundListeners();
+              });
+
+            return const TechNotePage();
+          }
+          return const LoginPage();
+        },
       ),
     );
   }

@@ -21,6 +21,10 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
   final DeleteTechNote _deleteTechNote;
   final GetAllTechNoteUsers _getAllTechNoteUsers;
 
+  // Guard Variable to prevent double invoke on first render
+  bool _isFetchingNotes = false;
+  bool _isFetchingUsers = false;
+
   TechNoteBloc({
     required GetAllTechNotes getAllTechNotes,
     required SyncAllTechNotes syncAllTechNotes,
@@ -54,20 +58,36 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
     TechNotesGetEvent event,
     Emitter<TechNoteState> emit,
   ) async {
-    final res = await _getAllTechNotes(NoParams());
+    // APPLY GUARD: If already fetching, ignore this duplicate trigger
+    if (_isFetchingNotes) return;
 
-    res.fold(
-      (failure) => emit(
-        state.copyWith(
-          status: TechNoteStatus.failure,
-          message: failure.message,
+    _isFetchingNotes = true; // Lock
+
+    try {
+      // Don't emit loading if we are just refreshing silently,
+      // or do it based on your UI preference
+      if (state.status != TechNoteStatus.loading) {
+        emit(state.copyWith(status: TechNoteStatus.loading));
+      }
+
+      final res = await _getAllTechNotes(NoParams());
+
+      res.fold(
+        (failure) => emit(
+          state.copyWith(
+            status: TechNoteStatus.failure,
+            message: failure.message,
+          ),
         ),
-      ),
-      ((notes) => emit(
-        // Updates notes, KEEPS users!
-        state.copyWith(status: TechNoteStatus.success, notes: notes),
-      )),
-    );
+        ((notes) => emit(
+          // Updates notes, KEEPS users!
+          state.copyWith(status: TechNoteStatus.success, notes: notes),
+        )),
+      );
+    } finally {
+      // UNLOCK: Always release the guard, even if error occurs
+      _isFetchingNotes = false;
+    }
   }
 
   void _onTechNotesSyncEvent(
@@ -193,17 +213,28 @@ class TechNoteBloc extends Bloc<TechNoteEvent, TechNoteState> {
     TechNotesGetAllUsersEvent event,
     Emitter<TechNoteState> emit,
   ) async {
-    final res = await _getAllTechNoteUsers(NoParams());
+    // APPLY GUARD: If already fetching, ignore this duplicate trigger
+    if (_isFetchingUsers) return;
 
-    res.fold(
-      (failure) => emit(
-        state.copyWith(
-          status: TechNoteStatus.failure,
-          message: failure.message,
+    _isFetchingUsers = true; // Lock
+
+    try {
+      final res = await _getAllTechNoteUsers(NoParams());
+
+      res.fold(
+        (failure) => emit(
+          state.copyWith(
+            status: TechNoteStatus.failure,
+            message: failure.message,
+          ),
         ),
-      ),
-      (users) =>
-          emit(state.copyWith(status: TechNoteStatus.success, users: users)), // Updates users, KEEPS notes!
-    );
+        (users) => emit(
+          state.copyWith(status: TechNoteStatus.success, users: users),
+        ), // Updates users, KEEPS notes!
+      );
+    } finally {
+      // UNLOCK: Always release the guard, even if error occurs
+      _isFetchingUsers = false;
+    }
   }
 }

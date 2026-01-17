@@ -10,7 +10,7 @@ enum TechNoteStatus {
 }
 
 // A single class holding ALL data persistently
-class TechNoteState {
+final class TechNoteState {
   final TechNoteStatus status;
   final List<TechNoteEntities> notes; // Holds notes list
   final List<UserEntities> users; // Holds users list

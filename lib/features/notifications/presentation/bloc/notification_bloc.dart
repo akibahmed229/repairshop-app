@@ -17,6 +17,9 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   final SyncAllNotifications _syncAllNotifications;
   final DeleteAllNotifications _deleteAllNotifications;
 
+  // Guard Variable to prevent double invoke on first render
+  bool _isFetching = false;
+
   NotificationBloc({
     required GetAllNotifications getAllNotifications,
     required MarkNotificationAsRead markNotificationAsRead,
@@ -38,12 +41,22 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     FetchNotificationsEvent event,
     Emitter<NotificationState> emit,
   ) async {
-    final res = await _getAllNotifications(NoParams());
+    // APPLY GUARD: If already fetching, ignore this duplicate trigger
+    if (_isFetching) return;
 
-    res.fold(
-      (failure) => emit(NotificationFailure(message: failure.message)),
-      (notifications) => emit(NotificationInboxLoaded(notifications)),
-    );
+    _isFetching = true; // Lock
+
+    try {
+      final res = await _getAllNotifications(NoParams());
+
+      res.fold(
+        (failure) => emit(NotificationFailure(message: failure.message)),
+        (notifications) => emit(NotificationInboxLoaded(notifications)),
+      );
+    } finally {
+      // UNLOCK: Always release the guard, even if error occurs
+      _isFetching = false;
+    }
   }
 
   void _onMarkNotificationAsReadEvent(
