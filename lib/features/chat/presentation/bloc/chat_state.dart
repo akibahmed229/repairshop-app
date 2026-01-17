@@ -1,36 +1,41 @@
 part of 'chat_bloc.dart';
 
-@immutable
-sealed class ChatState {}
-
-final class ChatInitial extends ChatState {}
-
-final class ChatLoading extends ChatState {}
-
-final class ChatFailure extends ChatState {
-  final String error;
-  ChatFailure(this.error);
+enum ChatStatus {
+  initial,
+  loading,
+  success,
+  failure,
+  actionSuccess, // For things like "Message Sent" or "Chat Deleted"
 }
 
-// State when "Search Page" has results
-final class ChatUsersLoaded extends ChatState {
-  final List<UserEntities> users;
-  ChatUsersLoaded(this.users);
-}
-
-final class ChatConversationsLoaded extends ChatState {
+final class ChatState {
+  final ChatStatus status;
   final List<ChatConversationEntity> conversations;
+  final List<MessageEntity> messages; // Current chat room messages
+  final List<UserEntities> users; // Search results
+  final String? errorMessage;
 
-  ChatConversationsLoaded(this.conversations);
+  const ChatState({
+    this.status = ChatStatus.initial,
+    this.conversations = const [],
+    this.messages = const [],
+    this.users = const [],
+    this.errorMessage,
+  });
+
+  ChatState copyWith({
+    ChatStatus? status,
+    List<ChatConversationEntity>? conversations,
+    List<MessageEntity>? messages,
+    List<UserEntities>? users,
+    String? errorMessage,
+  }) {
+    return ChatState(
+      status: status ?? this.status,
+      conversations: conversations ?? this.conversations,
+      messages: messages ?? this.messages,
+      users: users ?? this.users,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
 }
-
-// State when "Chat Room Page" is active
-final class ChatRoomLoaded extends ChatState {
-  final List<MessageEntity> messages;
-
-  // We keep track of the messages list here.
-  // Note: Optimistic updates will modify this list directly.
-  ChatRoomLoaded(this.messages);
-}
-
-final class ChatDisconnected extends ChatState {}

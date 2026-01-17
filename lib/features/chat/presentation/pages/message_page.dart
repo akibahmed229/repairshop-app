@@ -16,12 +16,10 @@ class MessagePage extends StatefulWidget {
 }
 
 class _MessagePageState extends State<MessagePage> {
-  // 1. Local Cache: Keeps the list on screen while reloading in background
-  List<dynamic> _currentConversations = [];
-
   @override
   void initState() {
     super.initState();
+    // Connect socket and fetch conversations on start
     context.read<ChatBloc>().add(ChatConnectSocket());
     context.read<ChatBloc>().add(ChatConversations());
   }
@@ -32,50 +30,44 @@ class _MessagePageState extends State<MessagePage> {
       appBar: AppBar(title: const Text("Team Chat"), centerTitle: true),
       body: BlocConsumer<ChatBloc, ChatState>(
         listener: (context, state) {
-          if (state is ChatFailure) {
-            showSnackBar(context, state.toString());
+          if (state.status == ChatStatus.failure) {
+            showSnackBar(context, state.errorMessage ?? "An error occurred");
           }
-        },
-        buildWhen: (previous, current) {
-          // FIX: Allow 'ChatFailure' so the page can rebuild and remove the loader
-          return current is ChatConversationsLoaded ||
-              current is ChatLoading ||
-              current is ChatFailure;
         },
         builder: (context, state) {
-          // 2. Update Cache if we have new data
-          if (state is ChatConversationsLoaded) {
-            _currentConversations = state.conversations;
-          }
-
-          // 3. Loading Logic: Only show Loader if we have NO data to show
-          if (state is ChatLoading && _currentConversations.isEmpty) {
+          // 1. Initial Loading: Only show loader if we have NO data at all
+          if (state.status == ChatStatus.loading &&
+              state.conversations.isEmpty) {
             return const Loader();
           }
 
-          // 4. Failure Logic: If offline & empty, show Retry button
-          if (state is ChatFailure && _currentConversations.isEmpty) {
-            return _buildErrorState(state.toString());
+          // 2. Error State: Show error only if the list is empty
+          if (state.status == ChatStatus.failure &&
+              state.conversations.isEmpty) {
+            return _buildErrorState(
+              state.errorMessage ?? "Failed to load chats",
+            );
           }
 
-          // 5. Empty Logic: If loaded but list is empty
-          if (_currentConversations.isEmpty) {
+          // 3. Empty State: List is loaded but contains no chats
+          if (state.conversations.isEmpty &&
+              state.status != ChatStatus.loading) {
             return _buildEmptyState();
           }
 
-          // 6. Success Logic: Show the list (cached or fresh)
+          // 4. Main List: Shows data (even while loading in background)
           return RefreshIndicator(
             onRefresh: () async {
               context.read<ChatBloc>().add(ChatConversations());
             },
             child: ListView.separated(
-              itemCount: _currentConversations.length,
+              itemCount: state.conversations.length,
               separatorBuilder: (context, index) => const Padding(
                 padding: EdgeInsets.only(left: 16, right: 26),
                 child: Divider(height: 1),
               ),
               itemBuilder: (context, index) {
-                final chat = _currentConversations[index];
+                final chat = state.conversations[index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: _buildChatTile(
@@ -113,7 +105,7 @@ class _MessagePageState extends State<MessagePage> {
           Icon(
             Icons.chat_bubble_outline_rounded,
             size: 80,
-            color: AppPallete.greyColor.withOpacity(0.3),
+            color: AppPallete.greyColor.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -159,17 +151,15 @@ class _MessagePageState extends State<MessagePage> {
   }) {
     return ListTile(
       onTap: () async {
-        // 7. Navigation Wait Logic
         await Navigator.push(context, ChatRoomPage.route(userId, name));
-
         if (context.mounted) {
-          // Silent refresh: Updates the cached list in background without spinner
+          // Refresh list silently when coming back from a chat
           context.read<ChatBloc>().add(ChatConversations(isSilent: true));
         }
       },
       leading: CircleAvatar(
         radius: 28,
-        backgroundColor: AppPallete.gradient3.withValues(alpha: 0.2),
+        backgroundColor: AppPallete.gradient3.withAlpha(50),
         child: Text(
           name.isNotEmpty ? name[0].toUpperCase() : '?',
           style: const TextStyle(fontWeight: FontWeight.bold),

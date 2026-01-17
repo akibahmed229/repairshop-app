@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:repair_shop/core/common/models/user_model.dart';
 import 'package:repair_shop/core/error/server_execptions.dart';
@@ -45,6 +46,9 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       }
 
       return decodedBody.map((user) => UserModel.formJson(user)).toList();
+    } on SocketException {
+      // Catches actual network errors if connectionChecker missed them
+      throw ServerExecptions("No Internet Connection");
     } catch (e) {
       throw ServerExecptions("Failed to search users: ${e.toString()}");
     }

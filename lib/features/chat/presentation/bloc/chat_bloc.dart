@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:repair_shop/core/common/entities/user_entities.dart';
@@ -29,8 +28,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final DeleteChat _deleteChat;
 
   StreamSubscription<MessageEntity>? _socketSubscription;
-
-  // Guard Variable to prevent double invoke on first render
   bool _isFetching = false;
 
   ChatBloc({
@@ -50,7 +47,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
        _getAllConversations = getAllConversations,
        _sendMessage = sendMessage,
        _deleteChat = deleteChat,
-       super(ChatInitial()) {
+       super(const ChatState()) {
     on<ChatConnectSocket>(_onConnectSocket);
     on<ChatDisconnectSocket>(_onDisconnectSocket);
     on<ChatSearchUsers>(_onSearchUsers);
@@ -61,164 +58,168 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<_ChatReceiveMessage>(_onReceiveMessage);
   }
 
-  // 1. Connect and Subscribe to Stream
+  // 1. Socket Connection
   void _onConnectSocket(
     ChatConnectSocket event,
     Emitter<ChatState> emit,
   ) async {
-    if (_socketSubscription != null) {
-      return;
-    }
-    // Attempt connection
+    if (_socketSubscription != null) return;
+
     final result = await _connectChatSocket.call(NoParams());
 
-    result.fold((l) => emit(ChatFailure(l.message)), (r) async {
-      // If connection successful, subscribe to the stream
-      final streamResult = await _getMessageStream.call(NoParams());
-
-      streamResult.fold((l) => emit(ChatFailure(l.message)), (stream) {
-        _socketSubscription?.cancel();
-        _socketSubscription = stream.listen((message) {
-          add(_ChatReceiveMessage(message));
-        });
-      });
-    });
+    await result.fold(
+      (l) async => emit(
+        state.copyWith(status: ChatStatus.failure, errorMessage: l.message),
+      ),
+      (r) async {
+        final streamResult = await _getMessageStream.call(NoParams());
+        streamResult.fold(
+          (l) => emit(
+            state.copyWith(status: ChatStatus.failure, errorMessage: l.message),
+          ),
+          (stream) {
+            _socketSubscription?.cancel();
+            _socketSubscription = stream.listen(
+              (message) => add(_ChatReceiveMessage(message)),
+            );
+          },
+        );
+      },
+    );
   }
 
   // 2. Search Users
   void _onSearchUsers(ChatSearchUsers event, Emitter<ChatState> emit) async {
-    emit(ChatLoading());
+    emit(state.copyWith(status: ChatStatus.loading));
     final res = await _searchUsers.call(SearchUsersParams(query: event.query));
 
     res.fold(
-      (l) => emit(ChatFailure(l.message)),
-      (r) => emit(ChatUsersLoaded(r)),
+      (l) => emit(
+        state.copyWith(status: ChatStatus.failure, errorMessage: l.message),
+      ),
+      (r) => emit(state.copyWith(status: ChatStatus.success, users: r)),
     );
   }
 
   // 3. Load Chat History
   void _onGetHistory(ChatGetHistory event, Emitter<ChatState> emit) async {
-    emit(ChatLoading());
+    emit(state.copyWith(status: ChatStatus.loading));
     final res = await _getChatHistory.call(
       GetChatHistoryParams(otherUserId: event.otherUserId),
     );
 
     res.fold(
-      (l) => emit(ChatFailure(l.message)),
-      (r) => emit(ChatRoomLoaded(r)),
+      (l) => emit(
+        state.copyWith(status: ChatStatus.failure, errorMessage: l.message),
+      ),
+      (r) => emit(state.copyWith(status: ChatStatus.success, messages: r)),
     );
   }
 
+  // 4. All Conversations List
   void _onChatConversations(
     ChatConversations event,
     Emitter<ChatState> emit,
   ) async {
-    // APPLY GUARD: If already fetching, ignore this duplicate trigger
     if (_isFetching) return;
-
-    _isFetching = true; // Lock
+    _isFetching = true;
 
     try {
-      // ONLY show loading if it's NOT a silent request
-      if (!event.isSilent) {
-        emit(ChatLoading());
-      }
+      if (!event.isSilent) emit(state.copyWith(status: ChatStatus.loading));
 
       final res = await _getAllConversations.call(NoParams());
-
       res.fold(
-        (l) => emit(ChatFailure(l.message)),
-        (conversations) => emit(ChatConversationsLoaded(conversations)),
+        (l) => emit(
+          state.copyWith(status: ChatStatus.failure, errorMessage: l.message),
+        ),
+        (conversations) => emit(
+          state.copyWith(
+            status: ChatStatus.success,
+            conversations: conversations,
+          ),
+        ),
       );
     } finally {
-      // UNLOCK: Always release the guard, even if error occurs
       _isFetching = false;
     }
   }
 
-  // 4. Send Message
+  // 5. Send Message (Optimistic Update)
   void _onSendMessage(ChatSendMessage event, Emitter<ChatState> emit) async {
-    // We don't emit Loading here to prevent the UI from flickering.
-    // We rely on the result to update the list or show error via SnackBar in UI.
-
     final res = await _sendMessage.call(
       SendMessageParams(receiverId: event.receiverId, content: event.content),
     );
 
-    res.fold((l) => emit(ChatFailure(l.message)), (newMessage) {
-      // If successful, append to current list
-      if (state is ChatRoomLoaded) {
-        final currentMessages = (state as ChatRoomLoaded).messages;
-        emit(ChatRoomLoaded([newMessage, ...currentMessages]));
-      }
-    });
+    res.fold(
+      (l) => emit(
+        state.copyWith(status: ChatStatus.failure, errorMessage: l.message),
+      ),
+      (newMessage) {
+        // Append new message to existing messages list
+        final updatedMessages = [newMessage, ...state.messages];
+        emit(
+          state.copyWith(
+            status: ChatStatus.actionSuccess,
+            messages: updatedMessages,
+          ),
+        );
+      },
+    );
   }
 
-  // 5. Receive Real-time Message (Internal)
+  // 6. Receive Real-time Message
   void _onReceiveMessage(_ChatReceiveMessage event, Emitter<ChatState> emit) {
-    // Case 1: User is inside a Chat Room
-    if (state is ChatRoomLoaded) {
-      final currentState = state as ChatRoomLoaded;
+    // Check if message belongs to current room to avoid injecting wrong messages
+    bool isRelevant =
+        state.messages.isEmpty ||
+        event.message.senderId == state.messages.first.receiverId ||
+        event.message.senderId == state.messages.first.senderId;
 
-      // OPTIONAL: Check if the message belongs to the current conversation
-      // If you are chatting with User A, but User B sends a message,
-      // you might not want to inject it into User A's chat room.
-      final isRelevant =
-          currentState.messages.isEmpty ||
-          event.message.senderId == currentState.messages.first.receiverId ||
-          event.message.senderId == currentState.messages.first.senderId;
-
-      if (isRelevant) {
-        emit(ChatRoomLoaded([event.message, ...currentState.messages]));
-      }
+    List<MessageEntity> updatedMessages = state.messages;
+    if (isRelevant) {
+      updatedMessages = [event.message, ...state.messages];
     }
 
-    // Case 2: User is looking at the Conversation List
-    if (state is ChatConversationsLoaded) {
-      // final currentList = (state as ChatConversationsLoaded).conversations;
+    // Always refresh conversations silently when a message arrives
+    add(ChatConversations(isSilent: true));
 
-      // You would need logic here to:
-      // 1. Find the conversation this message belongs to
-      // 2. Update its 'lastMessage' and 'time'
-      // 3. Move it to index 0
-      // 4. emit(ChatConversationsLoaded(newList));
-
-      // For now, the easiest way is to just re-fetch the list silently:
-      add(ChatConversations(isSilent: true));
-    }
+    emit(state.copyWith(status: ChatStatus.success, messages: updatedMessages));
   }
 
-  // 6. Delete Message
+  // 7. Delete Message
   void _onDeleteMessage(
     ChatDeleteMessage event,
     Emitter<ChatState> emit,
   ) async {
     final res = await _deleteChat.call(DeleteChatParams(id: event.messageId));
 
-    res.fold((l) => emit(ChatFailure(l.message)), (r) {
-      if (state is ChatRoomLoaded) {
-        final currentMessages = (state as ChatRoomLoaded).messages;
-        // Remove the message locally
-        final updatedList = currentMessages
+    res.fold(
+      (l) => emit(
+        state.copyWith(status: ChatStatus.failure, errorMessage: l.message),
+      ),
+      (r) {
+        final updatedList = state.messages
             .where((msg) => msg.id != event.messageId)
             .toList();
-        emit(ChatRoomLoaded(updatedList));
-      }
-    });
+        emit(
+          state.copyWith(
+            status: ChatStatus.actionSuccess,
+            messages: updatedList,
+          ),
+        );
+      },
+    );
   }
 
-  // 7. Cleanup
+  // 8. Cleanup
   void _onDisconnectSocket(
     ChatDisconnectSocket event,
     Emitter<ChatState> emit,
   ) async {
     _socketSubscription?.cancel();
-    final res = await _disconnectChatSocket.call(NoParams());
-
-    res.fold(
-      (failure) => emit(ChatFailure(failure.message)),
-      (_) => emit(ChatDisconnected()),
-    );
+    _socketSubscription = null;
+    await _disconnectChatSocket.call(NoParams());
+    emit(state.copyWith(status: ChatStatus.initial));
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:repair_shop/core/common/widgets/loader.dart';
 import 'package:repair_shop/core/theme/app_pallate.dart';
 import 'package:repair_shop/core/utils/show_snackbar.dart';
 import 'package:repair_shop/features/chat/presentation/bloc/chat_bloc.dart';
@@ -41,6 +42,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         ChatSendMessage(receiverId: widget.otherUserId, content: text),
       );
       _messageController.clear();
+      // Optional: Scroll to bottom after sending
+      _scrollToBottom();
+    }
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     }
   }
 
@@ -55,133 +68,141 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.otherUserName), centerTitle: false),
-      body: Padding(
-        padding: EdgeInsetsGeometry.all(16),
+      body: SafeArea(
         child: Column(
           children: [
             // 1. Chat List
             Expanded(
               child: BlocConsumer<ChatBloc, ChatState>(
                 listener: (context, state) {
-                  if (state is ChatFailure) {
-                    showSnackBar(context, state.error);
-                  }
-                },
-                buildWhen: (previous, current) {
-                  // Log state changes to see what's happening
-                  print("UI State Change: $previous -> $current");
-                  return current is ChatRoomLoaded || current is ChatLoading;
-                },
-                builder: (context, state) {
-                  if (state is ChatLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (state is ChatRoomLoaded) {
-                    if (state.messages.isEmpty) {
-                      return const Center(child: Text("Say Hello! 👋"));
-                    }
-
-                    return ListView.builder(
-                      controller: _scrollController,
-                      reverse: true, // Newest messages at the bottom
-                      itemCount: state.messages.length,
-                      itemBuilder: (context, index) {
-                        final message = state.messages[index];
-                        // Align right if it's my message, left if theirs
-                        return Align(
-                          alignment: message.isMine
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            constraints: BoxConstraints(
-                              maxWidth:
-                                  MediaQuery.of(context).size.width * 0.75,
-                            ),
-                            decoration: BoxDecoration(
-                              color: message.isMine
-                                  ? AppPallete.gradient2
-                                  : AppPallete.borderColor,
-                              borderRadius: BorderRadius.only(
-                                topLeft: const Radius.circular(12),
-                                topRight: const Radius.circular(12),
-                                bottomLeft: message.isMine
-                                    ? const Radius.circular(12)
-                                    : Radius.zero,
-                                bottomRight: message.isMine
-                                    ? Radius.zero
-                                    : const Radius.circular(12),
-                              ),
-                            ),
-                            child: Text(
-                              message.content,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                  if (state.status == ChatStatus.failure) {
+                    showSnackBar(
+                      context,
+                      state.errorMessage ?? "Error sending message",
                     );
                   }
-                  return const SizedBox();
+                },
+                builder: (context, state) {
+                  // Show loader only on first-time fetch (when list is empty)
+                  if (state.status == ChatStatus.loading &&
+                      state.messages.isEmpty) {
+                    return const Loader();
+                  }
+
+                  if (state.messages.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "Say Hello! 👋",
+                        style: TextStyle(color: AppPallete.greyColor),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    controller: _scrollController,
+                    reverse: true, // Keep newest at the bottom
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 10,
+                    ),
+                    itemCount: state.messages.length,
+                    itemBuilder: (context, index) {
+                      final message = state.messages[index];
+                      final bool isMine = message.isMine;
+
+                      return Align(
+                        alignment: isMine
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 8,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.75,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isMine
+                                ? AppPallete.gradient2
+                                : AppPallete.borderColor.withAlpha(50),
+                            borderRadius: BorderRadius.only(
+                              topLeft: const Radius.circular(16),
+                              topRight: const Radius.circular(16),
+                              bottomLeft: Radius.circular(isMine ? 16 : 0),
+                              bottomRight: Radius.circular(isMine ? 0 : 16),
+                            ),
+                          ),
+                          child: Text(
+                            message.content,
+                            style: TextStyle(
+                              color: isMine
+                                  ? Colors.white
+                                  : Colors.white, // Adjust based on your theme
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
             ),
 
             // 2. Input Field
-            Container(
-              color: AppPallete.backgroundColor,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: InputDecoration(
-                        hintText: "Type a message...",
-                        hintStyle: TextStyle(color: Colors.grey.shade400),
-                        filled: true,
-                        fillColor: AppPallete.borderColor.withValues(
-                          alpha: 0.2,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: AppPallete.gradient2,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.send,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                      onPressed: _sendMessage,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildInputArea(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInputArea() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppPallete.backgroundColor,
+        border: Border(
+          top: BorderSide(color: AppPallete.borderColor.withAlpha(30)),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _messageController,
+              onSubmitted: (_) => _sendMessage(),
+              decoration: InputDecoration(
+                hintText: "Type a message...",
+                hintStyle: TextStyle(color: Colors.grey.shade500),
+                filled: true,
+                fillColor: AppPallete.borderColor.withAlpha(20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            onTap: _sendMessage,
+            child: const CircleAvatar(
+              radius: 24,
+              backgroundColor: AppPallete.gradient2,
+              child: Icon(Icons.send, color: Colors.white, size: 20),
+            ),
+          ),
+        ],
       ),
     );
   }

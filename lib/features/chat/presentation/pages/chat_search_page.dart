@@ -36,19 +36,17 @@ class _ChatSearchPageState extends State<ChatSearchPage> {
       appBar: AppBar(
         title: TextField(
           controller: _searchController,
+          autofocus: true,
           decoration: InputDecoration(
             hintText: 'Search by email..',
-            prefixIcon: Icon(Icons.email_outlined),
+            prefixIcon: const Icon(Icons.email_outlined),
             border: OutlineInputBorder(
-              // Provides a border around the field
-              borderRadius: BorderRadius.circular(
-                20.0,
-              ), // Makes the corners rounded
+              borderRadius: BorderRadius.circular(20.0),
             ),
-            contentPadding: EdgeInsets.symmetric(
+            contentPadding: const EdgeInsets.symmetric(
               vertical: 10.0,
               horizontal: 15.0,
-            ), // Adjusts internal padding
+            ),
           ),
           onSubmitted: (_) => _onSearch(),
         ),
@@ -58,20 +56,16 @@ class _ChatSearchPageState extends State<ChatSearchPage> {
       ),
       body: BlocConsumer<ChatBloc, ChatState>(
         listener: (context, state) {
-          if (state is ChatFailure) {
-            showSnackBar(context, state.error);
+          if (state.status == ChatStatus.failure) {
+            showSnackBar(context, state.errorMessage ?? "Search failed");
           }
         },
         builder: (context, state) {
-          if (state is ChatLoading) {
+          if (state.status == ChatStatus.loading) {
             return const Loader();
           }
 
-          if (state is ChatUsersLoaded) {
-            if (state.users.isEmpty) {
-              return const Center(child: Text("No users found."));
-            }
-
+          if (state.users.isNotEmpty) {
             return ListView.builder(
               itemCount: state.users.length,
               itemBuilder: (context, index) {
@@ -79,7 +73,10 @@ class _ChatSearchPageState extends State<ChatSearchPage> {
                 return ListTile(
                   leading: CircleAvatar(
                     backgroundColor: AppPallete.gradient2,
-                    child: Text(user.name[0].toUpperCase()),
+                    child: Text(
+                      user.name[0].toUpperCase(),
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
                   title: Text(
                     user.name,
@@ -87,7 +84,6 @@ class _ChatSearchPageState extends State<ChatSearchPage> {
                   ),
                   subtitle: Text(user.email),
                   onTap: () {
-                    // Navigate to Chat Room
                     Navigator.push(
                       context,
                       ChatRoomPage.route(user.id, user.name),
@@ -98,8 +94,14 @@ class _ChatSearchPageState extends State<ChatSearchPage> {
             );
           }
 
-          return const Center(
-            child: Text("Search for users to start chatting"),
+          // Initial state or no results
+          return Center(
+            child: Text(
+              state.status == ChatStatus.success && state.users.isEmpty
+                  ? "No users found."
+                  : "Search for users to start chatting",
+              style: const TextStyle(color: AppPallete.greyColor),
+            ),
           );
         },
       ),
