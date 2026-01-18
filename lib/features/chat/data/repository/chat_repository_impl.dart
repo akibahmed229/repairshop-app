@@ -153,10 +153,6 @@ class ChatRepositoryImpl implements ChatRepository {
           token,
         );
 
-        if (chatHistory.isEmpty) {
-          return Left(Failure(message: "Failed to get chat history"));
-        }
-
         return right(chatHistory);
       } else {
         return left(Failure(message: "No Internet Connection"));
@@ -177,10 +173,6 @@ class ChatRepositoryImpl implements ChatRepository {
         final conversations = await chatRemoteDataSource.getAllConversations(
           token,
         );
-
-        if (conversations.isEmpty) {
-          return Left(Failure(message: "Failed to get conversations"));
-        }
 
         return right(conversations);
       } else {

@@ -83,16 +83,34 @@ class _ViewTechNotePageState extends State<ViewTechNotePage> {
               // This will trigger the NotificationBell to rebuild automatically
               notificationBloc.add(NotificationSyncEvent());
 
-              // Wait for the reload to complete.
-              // You might want to listen to state changes or
               // delay here for UX smoothness.
-              await Future.delayed(
-                const Duration(milliseconds: 500),
-              ); // Delay for UX
+              await Future.delayed(const Duration(milliseconds: 500));
             },
 
             child: notes.isEmpty
-                ? const Center(child: Text("No Notes Found"))
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "No Notes Found",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: AppPallete.greyColor,
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Trigger a full reload
+                            context.read<TechNoteBloc>().add(
+                              TechNotesGetEvent(),
+                            );
+                          },
+                          child: const Icon(Icons.refresh_outlined),
+                        ),
+                      ],
+                    ),
+                  )
                 : (isGridView ? _buildGridView(notes) : _buildListView(notes)),
           );
         },

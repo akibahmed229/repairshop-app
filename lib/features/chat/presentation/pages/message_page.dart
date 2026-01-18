@@ -59,6 +59,11 @@ class _MessagePageState extends State<MessagePage> {
           return RefreshIndicator(
             onRefresh: () async {
               context.read<ChatBloc>().add(ChatConversations());
+
+              // delay here for UX smoothness.
+              await Future.delayed(
+                const Duration(milliseconds: 500),
+              ); // Delay for UX
             },
             child: ListView.separated(
               itemCount: state.conversations.length,
@@ -111,6 +116,13 @@ class _MessagePageState extends State<MessagePage> {
           const Text(
             "No messages yet",
             style: TextStyle(fontSize: 18, color: AppPallete.greyColor),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              // Trigger a full reload
+              context.read<ChatBloc>().add(ChatConversations());
+            },
+            child: const Icon(Icons.refresh_outlined),
           ),
         ],
       ),

@@ -33,10 +33,6 @@ class TechNoteRepositoryImpl implements TechNoteRepository {
           token: token!,
         );
 
-        if (notes.isEmpty) {
-          return left(Failure(message: "No notes exist"));
-        }
-
         await techNoteLocalDataSource.clearTechNotes();
         await techNoteLocalDataSource.cacheTechNotes(notes);
 
