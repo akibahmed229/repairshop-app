@@ -20,4 +20,34 @@ class MessageModel extends MessageEntity {
       isMine: map['senderId'] == myUserId,
     );
   }
+
+  MessageModel copyWith({
+    String? id,
+    String? senderId,
+    String? receiverId,
+    String? content,
+    DateTime? createdAt,
+    bool? isMine,
+  }) {
+    return MessageModel(
+      id: id ?? this.id,
+      senderId: senderId ?? this.senderId,
+      receiverId: receiverId ?? this.receiverId,
+      content: content ?? this.content,
+      createdAt: createdAt ?? this.createdAt,
+      isMine: isMine ?? this.isMine,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "senderId": senderId,
+      "receiverId": receiverId,
+      "content": content,
+      "createdAt": createdAt.toIso8601String(),
+      "isMine": isMine ? 1 : 0,
+      "isSynced": 1,
+    };
+  }
 }

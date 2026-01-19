@@ -17,7 +17,7 @@ import 'package:repair_shop/features/auth/domain/usecases/sync_fcm_device_token.
 import 'package:repair_shop/features/auth/domain/usecases/user_log_in.dart';
 import 'package:repair_shop/features/auth/domain/usecases/user_sign_up.dart';
 import 'package:repair_shop/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:repair_shop/features/chat/data/datasources/chat_local_source.dart';
+import 'package:repair_shop/features/chat/data/datasources/chat_local_data_source.dart';
 import 'package:repair_shop/features/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:repair_shop/features/chat/data/datasources/chat_socket_service.dart';
 import 'package:repair_shop/features/chat/data/repository/chat_repository_impl.dart';
@@ -90,8 +90,10 @@ Future<void> initDependencies() async {
       await db.execute(SqfliteSchema.createTechNotesTable);
       await db.execute(SqfliteSchema.createTechNoteUsersTable);
       await db.execute(SqfliteSchema.createNotificationsTable);
+      await db.execute(SqfliteSchema.createMessagesTable);
+      await db.execute(SqfliteSchema.createConversationsTable);
     },
-    version: 1,
+    version: 3,
   );
   serviceLocator.registerLazySingleton(() => db);
 
@@ -265,15 +267,15 @@ void _initNotifications() {
 void _initMessages() {
   serviceLocator
     ..registerFactory<ChatRemoteDataSource>(() => ChatRemoteDataSourceImpl())
-    ..registerFactory<ChatLocalSource>(
-      () => ChatLocalSourceImpl(database: serviceLocator()),
+    ..registerFactory<ChatLocalDataSource>(
+      () => ChatLocalDataSourceImpl(database: serviceLocator()),
     )
     ..registerLazySingleton(
       () => ChatSocketService(messageController: serviceLocator()),
     )
     ..registerLazySingleton<ChatRepository>(
       () => ChatRepositoryImpl(
-        chatLocalSource: serviceLocator(),
+        chatLocalDataSource: serviceLocator(),
         chatRemoteDataSource: serviceLocator(),
         socketService: serviceLocator(),
         connectionChecker: serviceLocator(),

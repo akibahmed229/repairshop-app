@@ -79,7 +79,7 @@ class _MessagePageState extends State<MessagePage> {
                     context,
                     name: chat.otherUserName,
                     lastMessage: chat.lastMessage,
-                    time: formatDateByMMMYYYY(chat.time),
+                    time: formatDateByMMMYYYY(chat.createdAt),
                     userId: chat.otherUserId,
                   ),
                 );

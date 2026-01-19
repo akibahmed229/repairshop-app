@@ -4,7 +4,7 @@ import 'package:repair_shop/core/error/failure.dart';
 import 'package:repair_shop/core/error/server_execptions.dart';
 import 'package:repair_shop/core/network/connection_checker.dart';
 import 'package:repair_shop/core/utils/sp_service.dart';
-import 'package:repair_shop/features/chat/data/datasources/chat_local_source.dart';
+import 'package:repair_shop/features/chat/data/datasources/chat_local_data_source.dart';
 import 'package:repair_shop/features/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:repair_shop/features/chat/data/datasources/chat_socket_service.dart';
 import 'package:repair_shop/features/chat/data/models/message_model.dart';
@@ -14,14 +14,14 @@ import 'package:repair_shop/features/chat/domain/repository/chat_repository.dart
 
 class ChatRepositoryImpl implements ChatRepository {
   final ChatRemoteDataSource chatRemoteDataSource;
-  final ChatLocalSource chatLocalSource;
+  final ChatLocalDataSource chatLocalDataSource;
   final ChatSocketService socketService;
   final ConnectionChecker connectionChecker;
   final SpService spService;
 
   ChatRepositoryImpl({
     required this.chatRemoteDataSource,
-    required this.chatLocalSource,
+    required this.chatLocalDataSource,
     required this.socketService,
     required this.connectionChecker,
     required this.spService,
@@ -32,7 +32,7 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       if (await connectionChecker.isConnected) {
         final token = await spService.getToken();
-        final myUserId = await chatLocalSource.getUserIdByToken(token!);
+        final myUserId = await chatLocalDataSource.getUserIdByToken(token!);
 
         final streamOfMessages = socketService.messageStream.map((data) {
           try {
@@ -56,7 +56,7 @@ class ChatRepositoryImpl implements ChatRepository {
     try {
       if (await connectionChecker.isConnected) {
         final token = await spService.getToken();
-        final userId = await chatLocalSource.getUserIdByToken(token!);
+        final userId = await chatLocalDataSource.getUserIdByToken(token!);
 
         socketService.connect(userId, '');
 
@@ -118,7 +118,7 @@ class ChatRepositoryImpl implements ChatRepository {
         final token = await spService.getToken();
         if (token == null) return left(Failure(message: "Not authenticated"));
 
-        final myUserId = await chatLocalSource.getUserIdByToken(token);
+        final myUserId = await chatLocalDataSource.getUserIdByToken(token);
 
         final message = await chatRemoteDataSource.sendMessage(
           receiverId: receiverId,
@@ -141,21 +141,33 @@ class ChatRepositoryImpl implements ChatRepository {
     String otherUserId,
   ) async {
     try {
+      final token = await spService.getToken();
+      if (token == null) return left(Failure(message: "Not authenticated"));
+
+      final myUserId = await chatLocalDataSource.getUserIdByToken(token);
+
       if (await connectionChecker.isConnected) {
-        final token = await spService.getToken();
-        if (token == null) return left(Failure(message: "Not authenticated"));
-
-        final myUserId = await chatLocalSource.getUserIdByToken(token);
-
         final chatHistory = await chatRemoteDataSource.getChatHistory(
           otherUserId,
           myUserId,
           token,
         );
 
+        // await chatLocalDataSource.clearCachedMessages();
+        await chatLocalDataSource.cacheMessages(chatHistory);
+
         return right(chatHistory);
       } else {
-        return left(Failure(message: "No Internet Connection"));
+        final cachedChatHistory = await chatLocalDataSource.getCachedMessages(
+          myUserId,
+          otherUserId,
+        );
+
+        if (cachedChatHistory == null) {
+          return left(Failure(message: "cached message not found"));
+        }
+
+        return right(cachedChatHistory);
       }
     } on ServerExecptions catch (e) {
       return left(Failure(message: e.message));
@@ -174,9 +186,19 @@ class ChatRepositoryImpl implements ChatRepository {
           token,
         );
 
+        await chatLocalDataSource.clearCachedConversations();
+        await chatLocalDataSource.cacheConversations(conversations);
+
         return right(conversations);
       } else {
-        return left(Failure(message: "No Internet Connection"));
+        final cachedConversations = await chatLocalDataSource
+            .getCachedConversations();
+
+        if (cachedConversations == null) {
+          return left(Failure(message: "cached conversations not found"));
+        }
+
+        return right(cachedConversations);
       }
     } on ServerExecptions catch (e) {
       return left(Failure(message: e.message));

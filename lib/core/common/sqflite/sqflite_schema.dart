@@ -25,7 +25,7 @@ class SqfliteSchema {
       updatedAt TEXT NOT NULL,
       userName TEXT,
       userEmail TEXT,
-      isSynced INTEGER NOT NULL
+      isSynced INTEGER NOT NULL DEFAULT 0
   );
 ''';
 
@@ -53,7 +53,33 @@ class SqfliteSchema {
       noteId TEXT NOT NULL,
       isRead INTEGER NOT NULL,
       createdAt TEXT NOT NULL,
-      isSynced INTEGER NOT NULL
+      isSynced INTEGER NOT NULL DEFAULT 0
+  );
+''';
+
+  static final createMessagesTable =
+      '''
+  CREATE TABLE ${AppSecrets.messagesTable}(
+      id TEXT PRIMARY KEY NOT NULL,
+      senderId TEXT NOT NULL,
+      receiverId TEXT NOT NULL,
+      content TEXT NOT NULL,
+      createdAt TEXT NOT NULL,
+      isMine INTEGER NOT NULL,
+      isSynced INTEGER NOT NULL DEFAULT 0
+  );
+''';
+
+  static final createConversationsTable =
+      '''
+  CREATE TABLE ${AppSecrets.conversationTable}(
+      id TEXT PRIMARY KEY NOT NULL,
+      otherUserId TEXT NOT NULL,
+      otherUserName TEXT NOT NULL,
+      lastMessage TEXT NOT NULL,
+      createdAt TEXT NOT NULL,
+      unreadCount INTEGER DEFAULT 0,
+      isSynced INTEGER NOT NULL DEFAULT 0
   );
 ''';
 }
