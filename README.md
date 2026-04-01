@@ -6,6 +6,17 @@ This README covers the **frontend** portion of the app, built entirely using **F
 
 ---
 
+<h2 align="center"> Current App Preview </h2>
+
+|                                               |                                                |
+| :-------------------------------------------: | :--------------------------------------------: |
+| <img src="./assets/preview/1_RepairShop.png"> | <img src="./assets/preview/4_RepairShop.png">  |
+| <img src="./assets/preview/5_RepairShop.png"> | <img src="./assets/preview/10_RepairShop.png"> |
+| <img src="./assets/preview/2_RepairShop.png"> | <img src="./assets/preview/3_RepairShop.png">  |
+| <img src="./assets/preview/6_RepairShop.png"> | <img src="./assets/preview/7_RepairShop.png">  |
+| <img src="./assets/preview/8_RepairShop.png"> | <img src="./assets/preview/9_RepairShop.png">  |
+|                                               |                                                |
+
 ## 🧠 App Architecture
 
 The project follows **Flutter Clean Architecture** principles with a clear separation of concerns:
