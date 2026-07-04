@@ -6,9 +6,6 @@ This README covers the **frontend** portion of the app, built entirely using **F
 
 ---
 
-<details>
-<summary><b>Click to expand Current App Previews</b></summary>
-
 <h2 align="center"> Current App Preview </h2>
 
 |                                               |                                                |
@@ -19,7 +16,6 @@ This README covers the **frontend** portion of the app, built entirely using **F
 | <img src="./assets/preview/6_RepairShop.png"> | <img src="./assets/preview/7_RepairShop.png">  |
 | <img src="./assets/preview/8_RepairShop.png"> | <img src="./assets/preview/9_RepairShop.png">  |
 
-</details>
 
 ## 🧠 App Architecture
 
